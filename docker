@@ -24,3 +24,8 @@ create Docker image and build:
 5. delete images : docker rmi IMAGE_ID
 6. create docker IMAGE: docker build -t DOCKER_IMAGE_NAME:TAG_NAME .
 7. to show docker Images: docker images
+8. create container : docker run IMAGE_NAME:TAG_NAME
+9. access container : docker exec -it CONTAINER_ID sh
+
+
+Port Forwarding: docker run -p HOST_MACHINE_PORT:CONTAINER_PORT IMAGE_NAME:TAG_NAME
