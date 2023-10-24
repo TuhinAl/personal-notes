@@ -1,0 +1,17 @@
+
+
+NameSpace: Linux kenrnel mainly create nampespace. Namespacing is siolating resources per process (or group of process).
+=========
+
+Control Group: cgroup limit amount of resources used per process.
+=============
+
+what is docker? it is an ecosystem that helps us to containerize the application, docker ecosystem contains Docker Client, Docker Server, Docker Machine, Docker Images, Docker Hub, Docker Composes.
+
+what is Docker Images: Image is a snapshot of filesystem that contains dependent libraries and configurations files.
+
+  docker run = docker pull + docker start, when we write 'docker run IMAGE_NAME' in terminal, docker client receive the 'run IMAGE_NAME' commaint and ccheck that image in local cache, if not found in local cache then pull it from Docker Hub, cached it in 
+    local registry, then make the container, distribute the recources (Network, bandwidth, RAM, Storage, CPU) and finally start as startup command. Docker image has two part, file system and startup command.
+
+    ** to interact with docker container: docker run -it IMAGE_NAME sh 
+  
