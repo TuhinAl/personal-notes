@@ -1,0 +1,11 @@
+Actor: 
+
+rectangle -> as a single process. collections of same instance(load balance e auto scaling hoile ekta Instance er onekgula replica instance create hoi, etake process bola hoi.)
+
+ of Keycloak: OAuth2,0, OpenID Connect, SAML
+Keycloak Admin use Administrator tools: 
+		- add user
+		- set up configuration for OAuth2.0, OPenID Connect, SAML
+
+
+docker run -p 8080:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin keycloak/keycloak:latest start-dev
