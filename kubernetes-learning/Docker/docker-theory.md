@@ -210,10 +210,105 @@ all images and container exist in the docker host `/var/lib/docker/`
     * Inspect changes to a container's filesystem: `docker diff <container>`
 
     
+#### Container Inspect:
+`docker inspect <container>` // resource consumption of the container <br>
+docker logs <container> // logs of the container <br>
+
+docker container logs -f <container> // follow the logs of the container <br>
+
+#### Stopping and removing containers
+ **Linux Signals:**
+    1. SIGTERM: This signal is used to request a process to terminate. It allows the process to perform cleanup operations before exiting.
+    2. SIGKILL: This signal is used to forcefully terminate a process. It does not allow the process to perform any cleanup operations.
+    3. SIGINT: This signal is used to interrupt a process. It is typically sent by pressing Ctrl+C in the terminal.
+    4. SIGQUIT: This signal is used to request a process to quit. It is similar to SIGINT but produces a core dump when the process exits.
+    5. SIGHUP: This signal is used to hang up a process. It is typically used to reload configuration files or restart daemons.
+    6. SIGUSR1: This signal is a user-defined signal that can be used by applications to perform custom actions.
+    7. SIGUSR2: This signal is another user-defined signal that can be used by applications to perform custom actions.
+    8. SIGWINCH: This signal is used to notify a process that the terminal window size has changed.
+    9. SIGSTOP: This signal is used to stop a process. It suspends the process and can be resumed later using the SIGCONT signal.
+    10. SIGCONT: This signal is used to resume a process that has been stopped using the SIGSTOP signal.
+    `$ kill -SIGSTOP $(pgrep nginx)` // stop the nginx process
+    `$ docker container kill --signal=9 web` // kill the container with the signal 9
+    `$ ls -lrt /var/lib/docker/containers/` // list all the containers in the docker host
+    `$ docker container ls -q` // list all the containers in the docker host
+    `$ docker container stop $(docker container ls -q)` // stop all the containers in the docker host
+    `$ docker container rm -f $(docker container ls -aq)` // remove all the containers in the docker host
+
+ifter loging in container with interactive terminal mode, using `ps -ef` command to list all the process in the container. <br>
+`$ docker exec -it <container> bash` <br>
+`$ ps -ef` <br>
+`$ tty` - print the file name of the terminal connected to standard input <br>
+`$ exit` - exit the container <br>
+`$ Ctrl+P+Q` - exit the container without stopping the container <br>
+![Container Process](./images/engine/container-process.png) <br>
+
+`$ docker exec -it <container> hostname` <br> // print the hostname of the container <br>
+`$ docker exec -it <container> cat /etc/hosts` <br> // print the hosts file content <br>
+`$ docker exec -it d7 cat /etc/lsb-release` <br> // print the os version of the container <br>
+
+`$ docker exec -it <container> cat /etc/os-release` <br> // print the os version of the container <br>
+`$ docker exec -it <container> cat /etc/issue` <br> // print the os version of the container <br>
+`$ docker exec -it <container> cat /etc/lsb-release` <br> // print the os version of the container <br>
+`$ docker exec -it <container> cat /etc/redhat-release` <br> // print the os version of the container <br>
+`$ docker exec -it <container> cat /etc/debian_version` <br> // print the os version of the container <br>
+
+`$ docker exec -it <container> cat /etc/issue` <br> // print the os version of the container <br>
+`$ docker exec -it <container> cat /etc/lsb-release` <br> // print the os version of the container <br>
+`$ docker exec -it <container> cat /etc/redhat-release` <br> // print the os version of the container <br>
+`$ docker exec -it <container> cat /etc/debian_version` <br> // print the os version of the container <br>
+
+`$ docker exec -it <container> cat /etc/issue` <br> // print the os version of the container <br>
+`$ docker exec -it <container> cat /etc/lsb-release` <br> // print the os version of the container <br>
+`$ docker exec -it <container> cat /etc/redhat-release` <br> // print the os version of the container <br>
+`$ docker exec -it <container> cat /etc/debian_version` <br> // print the os version of the container <br>
+
+`$ docker exec -it <container> cat /etc/issue` <br> // print the os version of the container <br>
+`$ docker exec -it <container> cat /etc/lsb-release` <br> // print the os version of the container <br>
+`$ docker exec -it <container> cat /etc/redhat-release` <br> // print the os version of the container <br>
+`$ docker exec -it <container> cat /etc/debian_version` <br> //
+
+`$ docker container log -f <container>` // follow the live-logs of the container <br>
+
+#### Set hostname
+`$ docker run -d --name my-nginx --hostname my-nginx nginx` <br>
+`$ docker exec -it my-nginx hostname` <br>
+
+#### Restart policy
+`$ docker run -d --name my-nginx --restart always nginx` <br>
+`$ docker run -d --name my-nginx --restart unless-stopped nginx` <br>
+`docker run -d --name my-nginx --restart on-failure:5 nginx` <br>
+Catch: It does not restart the container if the container is stopped manually. it restart if the daemon is restarted. <br>
+![Container Restart Policy](./images/engine/container-restart-policy.png)
 
 
+**Live Restore in Docker:** Live restore is a feature that allows Docker to restore containers that were running when the Docker daemon was stopped or restarted. This feature is useful for maintaining the state of containers across daemon restarts (for unless-stopped). <br>
+`$ docker run -d --name my-nginx --live-restore nginx` <br>
+docker live restore is configured in the docker daemon configuration file. <br>
+`/etc/docker/daemon.json` <br>
+`{
+    "live-restore": true
+}` <br>
+and then restart the docker service
+`systemctl restart docker` <br>
+`systemctl start docker` <br>
 
 
+Copying files to and from a container: <br>
+* Container cp-- from **host to container** <br>
+`$ docker container cp <source> <destination>` <br>
+example: `docker container cp /etc/hosts my-nginx:/tmp/hosts` <br>
+
+* Container cp-- from **container to host** <br>
+`$ docker container cp <container>:<source> <destination>` <br>
+
+`$ docker cp /etc/hosts my-nginx:/tmp/hosts` <br>
+`$ docker exec -it my-nginx cat /tmp/hosts` <br>
+`$ docker cp my-nginx:/tmp/hosts /tmp/hosts` <br>
+
+![Container Restart Policy](./images/engine/copying-contents.png) <br>
+
+#### Publishing port and port mapping:
 
 
 
