@@ -309,22 +309,40 @@ example: `docker container cp /etc/hosts my-nginx:/tmp/hosts` <br>
 ![Container Restart Policy](./images/engine/copying-contents.png) <br>
 
 #### Publishing port and port mapping:
+1. **Host to Container**: `docker run -d -p 80:80 --name my-nginx nginx` <br>
+2. **Container to Host**: `docker run -d -p 80:80 --name my-nginx nginx` <br>
+3. **Multiple Network Interfaces**: 
+Suppose our host hase 3 different network interfaces, and we want to bind the container to a specific network interface. <br>
+`$ docker run -d -p 192.168.1.5:80:80 --name my-nginx nginx` <br>
+`$ docker run -d -p 127.0.0.1:80:80 --name my-nginx nginx` <br>
+`$ docker run -d -p 5000:80 --name my-nginx nginx`  //omit the host ip  and port<br>
+ephemeral port range: 32765 - 60999
+these ports are defined in:  <br>
+`$ cat /proc/sys/net/ipv4/ip_local_port_range` <br>
+Ephemeral port range is used by the kernel to assign the port to the application. Ephemeral port range is a set of temporary ports used by networking protocol software for establishing outgoing connections
 
+![Container Port Mapping](./images/engine/port-mapping.png) <br>
+![Container Port Publish](./images/engine/port-publish.png) <br>
 
+#### How does docker map a port? 
+Using IpTables Rules: <br>
+Ip Tables Rules: used to manage packet filtering rules and NAT rules in the Linux kernel firewall. <br>
+`$ iptables -t nat -L -n`
+`$ iptables -t nat -S DOCKER` <br>
 
+#### Docker container part2:
+`docker container run -itd --name=testcontainer --rm ubuntu` used in CICD pipeline, when many containers are created and destroyed simultaneously. <br> 
 
+The main difference between docker name and hostname is that the name is used to identify the container in the docker host, while the hostname is used to identify the container in the network. docker name must be unique but hostname can be the same for multiple containers <br>
 
+**exploring --restart 4 cases**
+`$ docker container run -itd --name=caseone --restart=no ubuntu` <br>
+`$ docker container run -itd --name=casetwo --restart=on-failure ubuntu` <br> // in this situation, the container will restart if it exits with it non-zero exit status
+`$ docker container run -itd --name=casethree --restart=always ubuntu` <br> // restart if docker daemon restart
+`$ docker container run -itd --name=casefour --restart=unless-stopped ubuntu` <br>
+In this case: docker container will NOT restart even though docker daemon is restart
 
-
-
-
-
-
-
-
-
-
-
+ls -lrt /var/lib/docker/containers/ <br> // list all the containers in the docker host <br>
 
 
 
