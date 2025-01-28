@@ -342,12 +342,46 @@ The main difference between docker name and hostname is that the name is used to
 `$ docker container run -itd --name=casefour --restart=unless-stopped ubuntu` <br>
 In this case: docker container will NOT restart even though docker daemon is restart
 
-ls -lrt /var/lib/docker/containers/ <br> // list all the containers in the docker host <br>
+`$ ls -lrt /var/lib/docker/containers/` <br> // list all the containers in the docker host <br>
 
 
+## Docker Image Management
 
+ [Kapeli Dockerfile Guide](https://kapeli.com/cheat_sheets/Dockerfile.docset/Contents/Resources/Documents/index/ )
 
+docker login docker.io <br>
+docker pull ubuntu:latest <br>
+#### image retagging and pushing
+`$ docker tag httpd:alpine httpd:customv1` <br>
+`$ docker push myrepo/httpd:customv1` <br>
+`$ docker push privaterepo.com/myrepo/httpd:customv1` <br>  push the image to the private repository <br>
+`$ docker system df` <br> will display the actual size of different object
 
+docker image history <image> <br> // display the history of the image or image layers <br>
+
+**Images inspect -with format**
+`$ docker image inspect httpd -f '{{.Os}}'` <br>  print the os of the image <br>
+`$ docker image inspect httpd -f '{{.Architecture}}'`  
+`$ docker image inspect httpd -f '{{.Architecture}} {{.Os}}'`  
+
+Image Save and Load: <br>
+`$ docker image save alpine:latest -o alpine.tar`
+`$ docker image load -i httpd.tar` <br>
+
+`$ docker image tag httpd:alpine httpd:test1` //
+`$ docker system df` // verify actual size of the docker images
+
+`$ docker image save httpd:latest -o httpd.tar `<br>
+`$ docker image load -i httpd.tar` <br> // this approach is used to save the image and load the image in the different docker host if the internet is not available
+
+`$ docker export test > httpd.tar`  export the container to the tar file to create images
+`$ docker image import httpd.tar httpd:lates`
+
+#### Create docker images
+`$ docker build . -f Dockerfile -t tuhinal/my-app:latest` <br>
+`$ docker push tuhinal/my-app:latest`
+
+ls -lrt
 
 
 
