@@ -383,10 +383,133 @@ Image Save and Load: <br>
 
 ls -lrt
 
+## Docker Security
+
+#### Docker Daemon Security: 
+What is the problem if someone gets access to the docker daemon? <br>
+* Can delete existing containers hosting application
+* Delete volumes storing data
+* Run container to run their application (i.e bitcoin mining)
+* Gain root access to the host system by running a previleged container.
+* Target the other systems in the network.
+
+By Default Docker exposes the docker daemon service within the host only one UNIX Socket. That's prevent anyone  outside the host preventing accessing the docker daemon 
+
+The first level of security that must think about is securing the daocker host itself from unwanted access.
+usual security best practices:
+* Controlling root user
+* Disabling unused ports
+* Disabled password based authentication
+* Enable SSH key based authentication
+* Determin users who needs acess to the server
+
+If your host has a public facing interface
+
+we also discussed about configuring external access to the docker daemon by enabling the TCP socket. <br>
+`$ dockerd --host tcp://192.168.0.1:2375` <br>
+`$ export DOCKER_HOST="tcp://192.168.0.1:2375"` <br>
+
+at some time we may really have to allow access to the docker daemon from the another management host. say a user laptop. it need when it absolulately nessecary. <br>
+
+`/etc/var/docker/daemon.json` <br>
+`{
+    "hosts": [tcp://192.168.0.1:2375]
+
+}` <br>
+
+Now, enables access to the docker daemon from outside the docker host through an interface on our host.<br>
+`$ systemctl restart docker` <br>
+
+now, If you have to do this make sure you have exposed the docker daemon on interface, that is private and only accessible from within your organization. <br>
+If your host have a public facing interface, make sure the daemon is not exposed on those interface <br>
+
+by allowing external access, we must also secure the communication with TLS Cerficate <br>
+so for this we can configure certificate authority (`cacert.pem`), server certificate (`server.pem`) and server key (`server-key.pem`) and we place this on the docker host and configure the `daemon.json` file<br>
+
+`$ dockerd --tlsverify --tlscacert=ca.pem --tlscert=server-cert.pem --tlskey=server-key
+
+**TLS Encryption:** <br>
+`/etc/var/docker/daemon.json` <br>
+`{
+    "hosts": [tcp://192.168.0.1:**2376**] **its important to change 2375 to 2376**
+    "tls": true,
+    "tlscacert": "/var/docker/tls/server.pem",
+    "tlscert": "/var/docker/tls/server-key.pem",
+
+}` <br>
+
+With this anyone outside the docker host can access the docker daemon only if they have the client certificate and key and can access the API and target it docker commands by simply setting the docker host environment variable to point to this host <br>
+
+![TLS Encryption](./images/security/tls-encryption.png) <br>
+
+`$ export DOCKER_TLS=true` // enable secure connection
+`$ export DOCKER_HOST="tcp://192.168.0.1:2376" ` <br>
+`$ docker ps` <br>
 
 
+But there still no authentication mechanism in place. meaning that anyone will knows that the docker daemon is being exposed on port 2376 on this host can still access docker daemon by simply setting docker daemon TLS environment variable to true and pointing the docker host environment variable to our host. and they can start deploying ocontainer on our host or delete existing container <br>
 
 
+Next step is to enable certificate based Authentication: for this we copy the `cacert.pem` to the docker daemon server side and configure `tlscacert` parameter and `tlsverify` in the `daemon.json` file to true.
+
+**TLS Authentication:** <br>
+`/etc/var/docker/daemon.json` <br>
+`{
+    "hosts": [tcp://192.168.0.1:2376"],
+    "tls": true,
+    "tlscacert": "/var/docker/tls/ca.pem", // to use verify the client certificate
+    "tlscert": "/var/docker/tls/server-cert.pem",
+    "tlskey": "/var/docker/tls/server-key.pem",
+    "tlsverify": true //enables the client certificate authentication
+}` <br>
+
+`$ systemctl restart docker` <br>
+
+![TLS Authenticationh](./images/security/tls-auth.png) <br>
+
+So, we genenrate certificate for our client call `client.pem` `clientkey.pem` ensures that securely with the Client server that wants to connect to the host along with the cacert.pem- the certificate of the CA. 
+
+![TLS Authenticationh](./images/security/tls-auth-2.png) <br>
+
+on the client side we set the docker tls verify to true adn then we either passing client certificate to the command line parameter or we drop the certificate into to the `~/.docker` directory under the /user/home directory, from there the docker command automatically pick-up this  certificate. and now only clients with sign certificate from CA server can access the docker daemon. <br>
+![TLS Authenticationh](./images/security/tls-auth-3.png) <br>
+
+So remember the TLS option `"tls": true,` alone does not authenticate the client. it only encrypts the communication between the client and the server. <br>
+`"tlsverify" :` option is what enabled the client authentication. <br>
+
+#### Summary:
+
+![TLS Authenticationh](./images/security/tls-summary.png) <br>
+
+## Namespaces:
+There is no hard isolation between the containers and the underlying host. <br>
+
+Namespace is a feature of the Linux kernel that provides process isolation. It allows multiple processes to run on the same host without interfering with each other. <br>
+Docker containers use namespaces to provide process isolation. Each container runs in its own namespace, which isolates it from other containers and the host system. <br>
+Namespaces provide the following types of isolation: <br>
+1. **PID Namespace**: Each container has its own PID namespace, which isolates the container's processes from the host system and other containers. This allows each container to have its own process tree, with its own init process and PID 1. <br>
+2. **Network Namespace**: Each container has its own network namespace, which isolates the container's network interfaces, routing tables, and firewall rules from the host system and other containers. This allows each container to have its own network stack, with its own IP addresses and network configuration. <br>
+3. **Mount Namespace**: Each container has its own mount namespace, which isolates the container's filesystem from the host system and other containers. This allows each container to have its own filesystem tree, with its own root directory and mount points. <br>
+4. **UTS Namespace**: Each container has its own UTS namespace, which isolates the container's hostname and domain name from the host system and other containers. This allows each container to have its own hostname and domain name. <br>
+5. **IPC Namespace**: Each container has its own IPC namespace, which isolates the container's inter-process communication (IPC) mechanisms from the host system and other containers. This allows each container to have its own shared memory segments, message queues, and semaphores. <br>
+6. **User Namespace**: Each container has its own user namespace, which isolates the container's user and group IDs from the host system and other containers. This allows each container to have its own set of user and group IDs, which are mapped to different IDs on the host system. <br>
+7. **Cgroup Namespace**: Each container has its own cgroup namespace, which isolates the container's control groups (cgroups) from the host system and other containers. This allows each container to have its own cgroup hierarchy, with its own resource limits and accounting. <br>
+8. **Time Namespace**: Each container has its own time namespace, which isolates the container's timekeeping from the host system and other containers. This allows each container to have its own clock source and time zone. <br>
+
+CGroups: Control Groups (cgroups) is a feature of the Linux kernel that allows you to limit and monitor the resource usage of a group of processes. Cgroups provide a way to control the CPU, memory, disk I/O, and network bandwidth usage of processes. <br>
+
+Resource Limits CPU, Memory, Disk I/O, Network Bandwidth. It Restrics the resource consumption by the container. <br>
+By default there are no restrictions on the resource usage of a container. <br> if require a container can consume all the resources of the host system. <br>
+
+When the kernel detect that a container is consuming all resources, it will start killing the processes in the container to free up resources. <br>
+Its important to understand the impact of the containers on resources available on the host. <br>
 
 Forground Process: 
 Background Process: `dockerd &` <br> background process is used to run the docker daemon in the background. <br>
+
+**Linux- CPU Sharing:** <br>
+CPU Shares: CPU shares are used to allocate CPU resources to containers. By default, all containers have the same number of CPU shares, which means they have equal access to CPU resources. <br>
+
+CFS (Completely Fair Scheduler): The Completely Fair Scheduler (CFS) is the default process scheduler in the Linux kernel. It provides fair CPU scheduling for all processes running on the system. <br>
+
+Real-time Scheduling: Real-time scheduling is a feature of the Linux kernel that allows processes to have guaranteed access to CPU resources. Real-time processes have higher priority than normal processes and are scheduled before them. <br>
