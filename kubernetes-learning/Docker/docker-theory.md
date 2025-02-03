@@ -601,3 +601,179 @@ Create a Docker Network: <br>
 `$ docker network ls` <br>
 `$ docker network inspect tuhin-custom-network` <br>
 `$ docker container inspect second|more ` <br>
+
+Docker Networks Namespaces: 
+
+It is used for Isolate the network. as we know containers are isolated from underlying host using namespaces.
+what is namespaces: If your house is a computer/host, then namespaces are like rooms in the house. Each room has its own purpose and is isolated from the other rooms. I'm assingin every room my childs. the rooms helps in providing privacy  to each child, each child can only see whats within in his/her room, they can't see what happening outside their room. But as a parent, there is a visibility into all the room. <br>
+
+Process Namespace: Each container has its own process namespace, which isolates the container's processes from the host system and other containers. This allows each container to have its own process tree, with its own init process and PID 1.  When we create a container you want to make sure that it is isolated, it doesn't see any other processes on the host or any other containers, so we create a special room for It on our host using a namespace, as far as the container is concerned it only sees the process run by it, and thinks that it in on its own host. but the underlying host, however has visibility into all of the processes including those running inside the containers <br>
+this can be seen by running the `ps -ef` or `ps aux`(on the container/host) command on the host. <br>
+
+![Process Namespaces](./images/network/process-namespaces.png) <br>
+
+Network Namespace: Each container has its own network namespace, which isolates the container's network interfaces, routing tables, and firewall rules from the host system and other containers. This allows each container to have its own network stack, with its own IP addresses and network configuration. <br>
+When we create a container we want to make sure that it is isolated from the network, it doesn't see any other network interfaces on the host or any other containers, so we create a special room for it on our host using a namespace, as far as the container is concerned it only sees the network interfaces that are part of its namespace, and thinks that it is on its own network. but the underlying host, however, has visibility into all of the network interfaces including those used by the containers. <br>
+
+when comes to networking, our host has its own interfaces that connected to the local area network, our host has its own routing and ARP table with information about rest of the network. we want to seal all of those details from the container. when the container is created, we create a network namespace for it that way it has no visibility to any network related information on the host. within its namespace the container can have its own virtual interfaces, routing and ARP table. the container has its own interfaces.
+
+![Network Namespaces](./images/network/network-namespaces.png) <br>
+
+To create a new network interface on alinux host run `ip netns add mynamespace` <br>
+
+`$ ip netns add mynamespace` <br>
+`$ ip netns list` <br>
+
+![Create Network Namespaces](./images/network/create-network-ns.png) <br>
+
+To list interfaces on my host run `ip link` <br> This is from host.
+`$ ip link` <br>
+`$ ip link set dev lo up` <br>
+
+but how do we view the same within the network namespace that we created? <br>
+`$ ip netns exec mynamespace ip link` <br> // here we are running the `ip link` command within the network namespace `mynamespace` <br>
+`$ ip netns exec mynamespace ip addr add `
+another way is 
+`$ ip -n red link`
+
+both are same, but remember only works if you intended to run the IP command within the network namespace. as you can see  it only least the loopback interface, you can't see the 80 interface on the host. so with namespaces we have successfully prevent that the container  from seeing the host interface <br>     
+
+<!-- ![Create Network Namespaces](./images/network/create-network-ns.png) <br> -->
+
+`$ arp`\
+`$ ip netns exec red arp` <br>
+and its same for routing table
+`$ ip netns exec red route` <br>
+as of now, these network namespaces have no network connectivity. they have no interfaces of their own, they cannot see the underlying host network.  lets first look at  establising connectivity between namespaces themself.<br>
+
+you can connect two namespaces together using a virtual ethernet pair or virtual cable, is often refered as a pipe. but we would like to call it a virtual cable with two interfaces on either ends.
+to create the tableL:
+`$ ip link add **veth-red** type veth peer name **veth-blue**` <br>
+![Create Network Namespaces](./images/network/virtual-ethernet-1.png) <br> 
+The next step is to attach each interface to the appropriate namespace. <br>
+`$ ip link set **veth-red** netns red` <br>
+`$ ip link set **veth-blue** netns blue` <br>
+
+![Create Network Namespaces](./images/network/virtual-ethernet-2.png) <br>
+
+we can then assign IP address to each of these namespaces. <br>
+![Create Network Namespaces](./images/network/virtual-ethernet-3.png) <br>
+
+now the links are up, we can ping from one namespace to another. <br>
+`$ ip netns exec red ping 192.168.15.2` <br>
+`$ ip netns exec blue ping 192.168.15.1` <br>
+
+Now, If we look into the ARP table on the `red` namespace we can see the MAC address of the `blue` namespace. <br>
+`$ ip netns exec red arp` <br>
+`$ ip netns exec blue arp` <br>
+
+If we comapre this with the ARP table of the host, we see that the host ARP table has no idea about new namespaces. and no idea about the interfaces created in them.
+![Create Network Namespaces](./images/network/virtual-ethernet-4.png) <br>
+
+Now we have two namespaces, what you do when you have more namespaces? <br> how do you enable all of them to communicate each other? <br> Its just like a physical worlds, we create a virtual network inside my host. To create a network we need a **Switch**. To create a virtual network, we need  a virtual switch. So you create a vurtual swtich within our host and connect the namespace to it. So how do you create a virtual switch within our host?
+Ans: Linux Bridge. <br>
+
+To create an internal Linux bridge network we add a new interface to the host using `ip link add` command with the `type` set to `bridge` 
+we name it `v-net-0` <br>
+![Linux Bridge](./images/network/linux-bridge.png) <br>
+It appears to the output of `ip link` command output. Its currently down. <br>
+`$ ip link set dev v-net-0 up` <br>
+
+Now for the namespaces, this interface is like a switch that it can connect to. so think of it as an interface for the host and switch for the namespaces<br>
+![Linux Bridge](./images/network/linux-bridge.png) <br>
+ so the next step is connect the namespaces to the this new virtual network switch. earlier, we created the cables, each pair (veth-red, veth-blue). <br>
+ because we wanted to connect two namespaces directly. now we'll connecting all namespaces to the bridge network, so we need new cables for that purpose. these cables doesn't make sense anymore, so we will get rid of it. 
+
+ use the `ip link del` command we can delete the cable. <br>
+ `$ ip -n red link del veth-red` <br>
+
+![Delete Link](./images/network/delete-link.png   ) <br>
+
+when you delete the link with one-end the other end gets deleted automatically, since they are pair <br>
+lets creates new cables to connect the namespaces to the bridge.  
+`$ ip link add veth-red type veth peer name veth-red-br` // -br for as it is connect to the bridge network <br>
+`$ ip link add veth-blue type veth peer name veth-blue-br` <br>
+
+
+this naming convention can easily identify the interfaces that associated to the red namespaces.  <br>
+Similarly create a cable to connect the blue namespace to the bridge network. <br>
+`$ ip link set veth-red-br netns red` <br>
+`$ ip link set veth-blue-br netns blue` <br>
+![Create Link](./images/network/linux-bridge-3.png) <br>
+
+Now, we have the cable ready, Its time to get them connected to the namespaces. to attach one end of the interface to the red namespace run
+`$ ip link set veth-red netns red` <br>
+to attach the other end to the bridge network run
+`$ ip link set veth-red-br master v-net-0` <br>
+![Create Link](./images/network/linux-bridge-4.png) <br>
+Now same for blue network:
+![Create Link](./images/network/linux-bridge-5.png) <br>
+
+Let us now set IP address for this link  and turn them up:
+`$ ip -n red addr add 192.168.15.1 dev veth-red` <br>
+<!-- `$ ip -n red link set dev veth-red up` <br> -->
+`$ ip -n blue addr add 192.168.15.2 dev veth-blue` <br>
+<!-- `$ ip -n blue link set dev veth-blue up` <br> -->
+Now turn the devices UP:
+`$ ip -n red link set dev veth-red up` <br>
+`$ ip -n blue link set dev veth-blue up` <br>
+
+Now the container reach each other over the network.
+![Create Link](./images/network/linux-bridge-6.png) <br>
+
+we will follow the same procedure to connect the remaining namespaces to the network. they all will be able to communicate with each other. we now all four namespaces connected they can all coommunicate with each other. <br>
+![Create Link](./images/network/linux-bridge-7.png) <br>
+and remember we assign our host to IP 192.168.1.2 and now `ping 192.168.15.1`, will it work? **NO** because my host in one network(192.168.1.0) and the namespaces are another network(192.168.15.0).
+but what if I really want to establish connectivity between my host and these namespaces? <br>
+Remember, we said that the bridge switch actually an interface for the host, so we do have an interface on the 192.168.15.0 network on our host. Since this just another interface, all we need to do is assign an IP address to it. so we can reach the interfaces through it. now run
+`$ ip addr add 192.168.15.5/24 dev v-net-0` <br>
+and ping the red namespaces from our localhost:<br>
+` ping 192.168.15.1`
+
+![Create Link](./images/network/linux-bridge-8.png) <br>
+
+Now remember, this entire network is still private and restricted within the host, from within the namespaces you cant reach the outside world nor can anyone outside the world reach the services/application hosted inside, the only door to the outside world is the **ethernet port on the host**. so how do we configure this bridge to reach the line network througt the ethernet port? say there is another host attached to our LAN network with address 192.168.1.3
+
+![Create Link](./images/network/linux-bridge-9.png) <br>
+How can we reach this port from within my namespaces. what happer if I try to ping this host from my blue namespaces?
+`$ ip netns exec blue ping 192.168.1.3`
+The blue namespaces sees that I'm trying to reach a network **192.168.1.0** which is different from my current network(**192.168.15.0**). so its look its routing table to find that network. the routing table has no information about other network. so it comes back saying that the network is unreachable. <br>
+![Create Link](./images/network/linux-bridge-10.png) <br>
+
+So, we need to add an entry into routing table to provide a gateway or a door to the outside world. so how do we find that gateway? A door/gateway is a system  on the local network that connects to the other network. so what is a system that has one interface on the network **LOCAL** to the **blue** namespace which is 192.168.15.0 network and also connected to the outside LAN network. here is the logical view: <br>
+
+![Create Link](./images/network/linux-bridge-11.png) <br>
+
+Its the localhost that have all this namespaces on, so you can ping the namespaces. remember our localhost has an interface to attach the private networks. so you can ping the namespaces, so our localhost is the gateway that connects the two networks together. we can now add a **route** entry in the blue namespace to say route all traffic 192.168.1.0/24 network throuth the gateway at 192.168.15.5. 
+
+`$ ip netns exec blue ip route add 192.168.1.0/24 via 192.168.15.5` <br>
+
+![Create Link](./images/network/linux-bridge-12.png) <br>
+now remember our host has two IP Address one in the brifge network 192.168.15.5 and another on the external network 192.168.1.2, can we use any in the route? **NO** because the blue namespace  can only reach the gateway is in local network at 192.168.15.5, the default gateway should be reachable from your namespace when it added to your route. when you try to ping now no longer get the error unreachable message but it still not get response back from the ping. what might be the problem? <br>
+![Create Link](./images/network/linux-bridge-13.png) <br>
+
+We talked about a similar situation in on of our earlier lecture, where from our home network we try to reach the external internet through our router, our home network has internal private IP adresses that the destination network dont know about, so they cannot reach back. for this we need NAT enable on our host, acting as a gateway here. so that it can sent the messages to the LAN in its own name and with its own address.
+
+How do we add NAT functionality? we can use the `iptables` command to add NAT rules. <br>
+`$ iptables -t nat -A POSTROUTING -s 192.168.15.0/24 -j MASQUERADE` <br>
+`$ iptables -t nat -L` <br>
+
+That way anyone receiving this packet outside the network will thing that the packet is coming from the host not from the within the namespaces. when we trying to ping now we are able to reach the outside world<br>
+
+`$ ip netns exec blue ping 192.168.1.3` <br>
+
+Finally LAN is cconnected to the internet, we want the namespaces reach the internet, so we try to ping a server in the internet at
+`$ ip netns exec blue ping google.com` <br>
+`$ ip netns exec blue ping 8.8.8.8` <br> it gives us 'Network is unreachable' <br>
+we dont know why that is happening. now we will check the routing table
+`$ ip netns exec blue route` <br>a
+
+![Create Link](./images/network/linux-bridge-14.png) <br>
+
+now, we need to add a default gateway. we can say that to reach any external network talk to our host. so we add a default gateeway specifying our host. we should now be able to reach outside world from within this namespaces:
+`$ ip netns exec blue ping 8.8.8.8` <br> 
+Now, what about the conncectivity from outside world to inside the namespaces. In order to make this communication, we have two options:
+i) add a port forwarding roles using iptables to say any traffic comming to port 80 on the localhost is to be forwarded to port 80 on the ip assign to the blue namespace<br>
+`$ iptables -t nat -A PREROUTING -dport 80 --to-destination 192.168.15.2:80 -j DNAT` <br>
+
+ ![Create Link](./images/network/linux-bridge-15.png) <br>
