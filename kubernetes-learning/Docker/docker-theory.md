@@ -513,3 +513,91 @@ CPU Shares: CPU shares are used to allocate CPU resources to containers. By defa
 CFS (Completely Fair Scheduler): The Completely Fair Scheduler (CFS) is the default process scheduler in the Linux kernel. It provides fair CPU scheduling for all processes running on the system. <br>
 
 Real-time Scheduling: Real-time scheduling is a feature of the Linux kernel that allows processes to have guaranteed access to CPU resources. Real-time processes have higher priority than normal processes and are scheduled before them. <br>
+
+Contianer can use 62% of the CPU resources. 
+
+## Docker Network:
+
+Default Networks:
+**Bridge Network:** <br>
+    Bridge is private internal network created by docker on the host and they create an internal IP address usually 172.17 series. Containers can access each other using this internal IP if required. <br>
+
+**Host Network:** <br>
+    Host network is used when you want to use the host network stack for the container. This means that the container shares the network stack with the host system and does not have its own network namespace. <br>
+    drawback: You cannot run multiple containers on the same host port. <br>
+
+**None Network:** The containers are not attached to any network and doesn't have any access to the external network or other containers. They run in a isolated network. <br>
+
+![Default Network](./images/network/default-network.png) <br>
+Isolate the container from the external network. <br>
+suppose, web-1(172.17.0.2) and web-2(172.17.0.4) are the containers and they are running on the same network 172.17.0.0   and application-1(182.18.0.3) and application-2 (182.18.0.2) are in another network()182.18.0.0  <br>
+`$ docker run -d --name web-1 nginx` <br>
+`$ docker run -d --name web-2 nginx` <br>
+`$ docker exec -it web-1 ping web-2` <br>
+`$ docker exec -it web-1 ping
+We could create own internal network and attach the containers to the network. <br>
+
+
+``` 
+$ docker network create \
+--driver bridge \
+--subnet 182.18.0.0/16 \
+custom-isolated-network 
+
+```
+<br>
+$ docker network ls
+
+Inspect Network: <br>
+`$ docker network inspect custom-isolated-network` <br>
+
+Embeded DNS Server: <br>
+Docker has an embedded DNS server that provides name resolution for containers. This allows containers to communicate with each other using their container names. <br>
+`$ docker exec -it web-1 ping web-2` <br>
+
+Scenario: Suppose my backend application have a database container running on the same node.
+How can I get my web server to access the database on the database container. one think I could dl is to use the IP address of the database container. but this is not a good practice because the IP address of the container can change if the container is restarted/rebuilds.
+
+The right wayto do it is to use container_name. All container in docker host can resolve usign the container name. <br>
+`$ docker exec -it web-1 ping database` <br>
+Docker has the in-build DNS server that helps the container to resolve each other using the cotainer name. <br>
+note that build in DNS server always run on 127.0.0.11 
+
+![Embedded DNS](./images/network/embedded-dns.png) <br>
+
+So how does docker implement docker networking? what is the technology behind it? <br>
+How are the containers isolated within the host? <br>
+Ans: Docker uses Network Namespaces that creates a separate namespace for each container (to provide network isolation for containers). It then uses virtual Ethernet pairs to connect the containers together/to the host network. <br>
+
+Network Namespaces are a feature of the Linux kernel that allows you to create multiple isolated network stacks on a single host. Each container runs in its own network namespace, which isolates its network interfaces, routing tables, and firewall rules from the host system and other containers. This allows each container to have its own network stack, with its own IP addresses and network configuration. <br>
+
+Custom Network Connection: <br>
+`$ docker network connect custom-isolated-network my-container` <br>
+`$ docker network disconnect custom-isolated-network my-container` <br>
+`$ docker network rm custom-isolated-network` <br>
+`$ docker network prune` <br>
+
+Lab: create a container Container-ONE and another Container-TWO, ping Container-ONE from Container-TWO <br>
+`$ docker exec -it first ping second` <br>
+**It will not work because Embedded DNS Server won't working withe the default `bridge` network.** <br>
+**Lab:** 
+* create two containers (`first`, `second`) from default network and ping each other. <br>
+* create two containers (`custom-first`, `custom-second`) from custom network and ping each other. <br>
+    `$ docker network create --driver bridge --subnet=192.168.10.0/24 tuhin-custom-network`
+    `$ docker exec -it customfirst ping customsecond`
+* ping the container `custom-first` from `first`
+* attacj the `first` container to the custom network and ping the container `custom-first` from `first` <br>
+* ping the container from the host <br>
+* ping the container from the host using the container name <br>
+* ping the container from the host using the container IP <br>
+* read the `/etc/hosts` file of the container <br>
+* read embeded DNS server of the container <br>
+    `$ docker exec -it customsecond cat /etc/resolv.conf` and check the nameserver <br>
+
+Create a Docker Network: <br>
+`$ docker network create --driver bridge --subnet=192.168.10.0/24 tuhin-custom-network` <br>
+`$ docker container stop $(docker container ls -q)` <br> // -aq for all the containers 
+`$ docker container rm $(docker container ls -q)` <br>
+`$ docker network ls` <br>
+`$ docker network inspect tuhin-custom-network` <br>
+`$ docker container inspect second|more ` <br>
