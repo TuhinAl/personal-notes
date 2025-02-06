@@ -103,8 +103,147 @@ Step-4: Get Password:
 
     Continuous Integration (CI) is a software development practice in which developers regularly merge their code changes into a central repository, after which automated builds and tests are run. The key goals of continuous integration are to find and address bugs quicker, improve software quality, and reduce the time it takes to validate and release new software updates.
 
-    What is JObs in Jenkins?
+    What is Jobs in Jenkins?
+    `Jobs` are the backbone of Jenkins. Job in Jenkins is any runnable task that is controlled or monitored by Jenkins.
+
     A job is a runnable task that is controlled or monitored by Jenkins. Jobs can be executed with parameters, on a specific node, at a specific time, and so on. Jobs can be chained, so that one job can trigger or wait for the completion of another. Jobs can be organized in a hierarchy of tasks.
     
-    
+    so Whatever the execution we are going to done by a Jenkins that execution must be done by a Jenkins Job. It means for each Execution task we need to create a Job in Jenkins.
+
     Create and Execute a Job in Jenkins:
+
+**FreeStyle Project:**
+This is a most common Type of Project, Build Type for this project is genenrally executed a shell(linux) command.
+
+A FreeStyle Project in Jenkins is like a simple task list that you can set up to do specific jobs automatically. Imagine you have a robot that can do chores for you, like cleaning your room, doing your homework, and feeding your pet. You can tell the robot what to do and in what order.
+
+In Jenkins, a FreeStyle Project is like giving instructions to that robot. You can tell Jenkins to:
+
+1. Get the latest version of your code from a repository (like a library where your code is stored).
+2. Build the code (like putting together a LEGO set).
+3. Run tests to make sure everything works (like checking if the LEGO set is built correctly).
+4. Deploy the code to a server (like putting the LEGO set on display).
+
+Here's a real-world example:
+
+Imagine you have a simple website, and you want to make sure it's always up-to-date and working correctly. You can create a FreeStyle Project in Jenkins to:
+
+1. **Pull the latest website code** from GitHub.
+2. **Build the website** (compile the code if needed).
+3. **Run tests** to make sure the website works (check links, load pages, etc.).
+4. **Deploy the website** to your hosting server.
+
+This way, every time you make changes to your website code, Jenkins will automatically follow these steps to update your website without you having to do it manually.
+
+In FreeStyle Project, we can run command in a shell/bash script, we can create the build of you software. or we can execute the script via freeStyle project.
+
+
+**Pipeline Project:**
+Its like a workflow. when we will create a complete workflow which will have some kind of Input, Output, and some kind of condition. then we will use the Pipeline Project. This project in normally written in DSL(Domain Specific Language).
+
+A Pipeline in Jenkins is like a recipe that tells Jenkins how to build, test, and deploy your code. Think of it as a step-by-step guide that Jenkins follows to make sure everything is done correctly.
+
+Here's an example to make it easy to understand:
+
+Imagine you want to bake a cake. You have a recipe that tells you what to do step by step:
+
+1. **Get the ingredients** (flour, sugar, eggs, etc.).
+2. **Mix the ingredients** together.
+3. **Bake the cake** in the oven.
+4. **Decorate the cake** with frosting.
+
+In Jenkins, a Pipeline is like this recipe. It tells Jenkins what steps to take to build, test, and deploy your code.
+
+Here's a simple example of a Jenkins Pipeline:
+
+```java
+pipeline {
+    agent any
+
+    stages {
+        stage('Get Ingredients') {
+            steps {
+                // Pull the latest code from GitHub
+                git 'https://github.com/your-repo/your-java-project.git'
+            }
+        }
+        stage('Mix Ingredients') {
+            steps {
+                // Build the project
+                sh './gradlew build'
+            }
+        }
+        stage('Bake the Cake') {
+            steps {
+                // Run tests
+                sh './gradlew test'
+            }
+        }
+        stage('Decorate the Cake') {
+            steps {
+                // Deploy the project
+                sh './gradlew deploy'
+            }
+        }
+    }
+}
+```
+
+```go
+pipeline {
+    agent any
+
+    stages {
+        stage('Get Ingredients') {
+            steps {
+                // Pull the latest code from GitHub
+                git 'https://github.com/your-repo/your-go-project.git'
+            }
+        }
+        stage('Mix Ingredients') {
+            steps {
+                // Build the project
+                sh 'go build ./...'
+            }
+        }
+        stage('Bake the Cake') {
+            steps {
+                // Run tests
+                sh 'go test ./...'
+            }
+        }
+        stage('Decorate the Cake') {
+            steps {
+                // Deploy the project
+                sh 'go install ./...'
+            }
+        }
+    }
+}
+```
+
+In this example:
+- **Get Ingredients**: Jenkins pulls the latest code from GitHub.
+- **Mix Ingredients**: Jenkins builds the project.
+- **Bake the Cake**: Jenkins runs tests to make sure everything works.
+- **Decorate the Cake**: Jenkins deploys the project to the server.
+
+This way, Jenkins follows the Pipeline steps just like you would follow a recipe to bake a cake!
+
+**Multi Configuration Project:**
+
+As like FreeStyle Project, Multi Configuration Project is also a type of project in Jenkins. But the difference is that in FreeStyle Project we can run the build on only one platform. But in Multi Configuration Project we can run the build on multiple platforms.
+
+
+**Execute Bash From Job:**
+* create a shell file inside /tmp directory.
+* write a shell script inside the file.
+* Go to Job Configuration -> Build Steps -> Execute Shell -> write the path of the shell file with required parameter and click on Save.
+* importantly, the shell file must have executable permission (chmod 755 FileName.sh).
+
+Question: What is the way we can pass the parameter to the Jenkins Job at runtime? sothat I want to exexute a parameterize script. I want execute a script with different different parameter. How can I do that?
+Ans: We can pass the parameter to the Jenkins Job at runtime by using the `Build with Parameters` option. In this option, we can pass the parameter to the Jenkins Job at runtime. 
+
+**Parameterize Job:**
+
+* Example: Job -> Configure -> General -> This project is parameterized -> Add Parameter -> String Parameter -> Name: `ENV` -> Default Value: `DEV` -> Apply -> Save.
