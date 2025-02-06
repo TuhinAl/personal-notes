@@ -178,3 +178,43 @@ remember you only need to change permission on of the hard links. That's because
 * Root user can change permission of any file or directory
 * To change the group of a fileor directory we can use the `chgrp` command
 * To change the owner of a file or directory we can use the `chown` command
+
+
+**19. SUID, SGID and Sticky Bit:**
+SUID A special permission that allows `users` to run an `executable` with the permission of the executable owner.
+SGID is a similar permission, but it applies to both executables and directories.
+Sticky Bit is a special persmission that can be set on directories, It restricts file deletion in that directory. 
+SUID - Set User ID
+SGID - Set Group ID
+**SUID** - when this is set on a file, it means that whenever the file is executed, it going to be executed as the User IDof the owner of the file Instead of the User ID of the person who is running the file.
+Capital **S** in the permission means that the file has the SUID permission but it is not executable.
+Small **s** in the permission means that the file has the SUID permission and it is executable.
+![Create Link](essential-comman-image/suid.png) <br>
+
+`$ touch testsuidfile`
+`$ chmod 4664 testsuidfile`
+`$ chmod 4764 testsuidfile`
+
+
+**SGID** 
+Capital **S** in the permission means that the file has the SGID permission but it is not executable.
+Small **s** in the permission means that the file has the SGID permission and it is executable.
+`$ touch testsgidfile`
+`$ chmod 2664 testsgidfile`
+`$ chmod 2674 testsgidfile`
+
+Important: sometimes you might ask to find that have the SUID bit or the SGID bit set. 
+`$ find . -perm /4000` # Find files with the SUID bit set
+`$ find . -perm /2000` # Find files with the SGID bit set
+`$ find . -perm /6000` # Find files with the Both(SUID+SGID) bit set
+`$ find . -perm /1000` # Find files with the sticky bit set
+
+**Sticky Bit**
+The sticky bit is a permission that can be set on directories. 
+When the sticky bit is set on a directory, it means that only the owner of the file can delete the file.
+`$ mkdir teststickyfile` # Create a new directory
+`$ ls -ld stickydir/` # List the directory
+`$ chmod +t stickydir/` # Set the sticky bit on the directory
+`$ chmod 1777 stickydir/` 
+`$ chmod 1666 stickydir/`
+`$ chmod 1775 teststickyfile`
