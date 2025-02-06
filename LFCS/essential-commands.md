@@ -21,13 +21,22 @@ Computer(SSH Client) -> Server(SSH Daemon)
 
 1  2     3    4     5  6                 7                    8    9  10  11   12 
 d**rwx**r-x**r-x**  2 root              root                 4096 Feb  5 07:02 cups
-1 # disk type
+1 # disk type / entry type
+![Create Link](essential-comman-image/file-type.png) <br>
 2 # permissions for the owner
 3 # permissions for the group
 4 # permissions for everyone else
+![Create Link](essential-comman-image/permission.png) <br>
+
 5 # number of hard links
 6 # owner
 7 # group
+![Create Link](essential-comman-image/evaluating-permission.png) <br>
+![Create Link](essential-comman-image/adding-permission.png) <br>
+![Create Link](essential-comman-image/remove-permission.png) <br>
+![Create Link](essential-comman-image/exact-permission.png) <br>
+![Create Link](essential-comman-image/octal-permission.png) <br>
+![Create Link](essential-comman-image/octal-permission-2.png) <br>
 8 # size
 9 # date and time of last modification
 10 # name
@@ -162,3 +171,10 @@ remember you only need to change permission on of the hard links. That's because
 `$ ls -l | sort -k 5 -n | head -n 5 | tail -n 3` # List files and directories and sort the output by the fifth column numerically and display the first five lines and the last three lines
 `$ ls -l | sort -k 5 -n | head -n 5 | tail -n 3 | wc -l` # List files and directories and sort the output by the fifth column numerically and display the first five lines and the last three lines and count the number of lines
 `$ ls -l | sort -k 5 -n
+
+
+**18. List, Set and Change Standard File Permission:**
+* Only the Owner of a file or directory can change permission 
+* Root user can change permission of any file or directory
+* To change the group of a fileor directory we can use the `chgrp` command
+* To change the owner of a file or directory we can use the `chown` command
