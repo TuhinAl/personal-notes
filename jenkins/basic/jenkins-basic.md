@@ -247,3 +247,6 @@ Ans: We can pass the parameter to the Jenkins Job at runtime by using the `Build
 **Parameterize Job:**
 
 * Example: Job -> Configure -> General -> This project is parameterized -> Add Parameter -> String Parameter -> Name: `ENV` -> Default Value: `DEV` -> Apply -> Save.
+
+**Anatomy of the Build**
+#### Buildi Application Manually: get the application on Jenkins Machine:
