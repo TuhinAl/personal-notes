@@ -231,7 +231,15 @@ When the sticky bit is set on a directory, it means that only the owner of the f
 * `find / -perm /o=rw`	# Finds files where **others have either** r **or** w **or both**. <br>
 * `find / -perm =o=rw`	# Finds files where **others have exactly** rw (**and nothing else**).
 
+* `$ find -name file1.txt` # No path –> search current directory
 * `$ find / -name file.txt` # Find a file in the filesystem <br>
+   ![Search Name](essential-comman-image/search-name.png) <br>
+   ![Search Name](essential-comman-image/modified-time.png) <br>
+   ![Search Name](essential-comman-image/file-size.png) <br>
+   ![Search Name](essential-comman-image/search-expression.png) <br>
+   ![Search Name](essential-comman-image/search-exp-2.png) <br>
+   ![Search Name](essential-comman-image/search-exp-3.png) <br>
+   ![Search Name](essential-comman-image/) <br>
 * `$ find -mmin +5` # Find files modified more than 5 minutes ago <br>
 * `$ find -mmin -5` # Find files modified less than 5 minutes ago <br>
 * `$ find -mmin 5` # Find files modified exactly 5 minutes ago <br>
