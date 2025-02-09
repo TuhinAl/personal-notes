@@ -299,3 +299,33 @@ When the sticky bit is set on a directory, it means that only the owner of the f
 * `$ find -perm -100` # Find files that the owner can execute **at least** but the rest of the permission can be anything <br>
 * `$ find \! -perm -o=r` # Nobody else can read these files except the user and group that own them  <br>
 * `$ find -perm /u=r,g=r,o=r` # Find files that can only be read either by the user, the group, or others, It doesn't matter who it is, but at least  one of them should be able to read it.
+
+**Compare and Manipulate File:**
+* cat: Concatenate and display the content of files. <br>
+* tac: Concatenate and display the content of files in reverse. <br>
+* head: Display the first lines of files. <br>
+* tail: Display the last lines of files. <br>
+* sort: Sort the lines of files. <br>
+* uniq: Display unique lines of files. <br>
+* sdiff: Display the differences between two files. <br>
+* sed: Stream editor for filtering and transforming text. <br>
+* cut: Remove sections from each line of files. <br>
+
+* `$ cat /linux_learn/country.txt` <br>
+* `$ tac /linux_learn/country.txt` <br>
+* `$ tail -n 20 /var/log/dnf.log` <br>
+* `$ head -n 20 /var/log/dnf.log` <br>
+* `$ sort /linux_learn/country.txt` <br>
+* `$ sort -r /linux_learn/country.txt` # reverse order <br>
+* `$ sort -n /linux_learn/country.txt` # numeric order <br>
+* `$ sort -nr /linux_learn/country.txt` # numeric reverse order <br>
+* `$ sort -k 2 /linux_learn/country.txt` # sort by second column <br>
+* `$ sort -k 2 -r /linux_learn/country.txt` # sort by second column in reverse order <br>
+* `$ sort -k 2 -n /linux_learn/country.txt` # sort by second column in numeric order <br>
+* `$ sort -k 2 -nr /linux_learn/country.txt` # sort by second column in numeric reverse order <br>
+* `$ sort -t : -k 2 /linux_learn/country.txt` # sort by second column with delimiter : <br>
+* `$ sort -t : -k 2 -r /linux_learn/country.txt` # sort by second column in reverse order with delimiter : <br>
+
+![Search Name](essential-comman-image/sed.png) <br>
+![Search Name](essential-comman-image/sed-2.png) <br>
+![Search Name](essential-comman-image/cut.png) <br>
