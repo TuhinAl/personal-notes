@@ -32,7 +32,37 @@ Within the main branch, the CA pipeline is triggered assessing the newly merged 
 In certain instances, a manual approval step before production deployment is a critical aspect of the deployment process. This step ensures that it minimizes the risks, ensuring quality, adhering to the compliance requirements, and effectively coordinating changes. It basically offers a safety net, which allows for human judgment and oversight within an otherwise automated process. In this scenario, the following successful completion of the CI pipeline, The CT pipeline always awaits a human approval before proceeding with the production deployment. This process of manual approval prior to production deployment is known as  **continuous delivery** . <br>
 
 ## Jenkins Architecture:
-Jenkins leverages a distributed architecture, which allows for the distribution of work across multiple machines. This architecture is composed of a master and multiple agents. The master is responsible for managing the entire Jenkins environment, including the configuration of jobs, security, and the distribution of work to the agents. The agents are responsible for executing the jobs assigned to them by the master. The agents can be configured to run on the same machine as the master or on a separate machine. This distributed architecture allows for the parallel execution of jobs, which can significantly reduce the time required to complete the build and test process. <br><br>
+**Intro:** Jenkins leverages a distributed architecture, which allows for the distribution of work across multiple machines. This architecture is composed of a master and multiple agents. The master is responsible for managing the entire Jenkins environment, including the configuration of jobs, security, and the distribution of work to the agents. The agents are responsible for executing the jobs assigned to them by the master. The agents can be configured to run on the same machine as the master or on a separate machine. This distributed architecture allows for the parallel execution of jobs, which can significantly reduce the time required to complete the build and test process. <br><br>
 
-The first component in the architecture is the Jenkins Controller. It is the central Hub of our jenkins setup, often referred to as the Jenkins Server. It has various responsiblities like management tasks such as user authentication, authorization, It can also manage jobs and pipelines like defining scheduling and monitoring the execution, it also provides web interface for configuration , setting up plugins, onboarding users, monitoring and managing the bulds within the Jenkins. <br>
+**1. Jenkins Controller**
+The first component in the architecture is the Jenkins Controller. It is the central Hub of our jenkins setup, often referred to as the Jenkins Server. It has various responsiblities like management tasks such as user authentication, authorization, It can also manage jobs and pipelines like defining scheduling and monitoring the execution, it also provides web interface for configuration , setting up plugins, onboarding users, monitoring and managing the builds within the Jenkins. <br>
 ![CI for feature branch B](./image/JA-1.png) <br>
+![CI for feature branch B](./image/JA-2.png) <br>
+1. Prevent accidental damamge by keeping our controller configurations safe from potential job related changes.<br>
+2. Boosts Perfomance by distributing build task across multipke machines, improving speed and effeciency for complex projects.<br>
+3. Scaling up  the jenkins server by adding more nodes as a project and automation need increase,
+
+**2. Node:** 
+Node are also formarly known as Jenkins Slaved, so notes play a crucial role in your CID workflow by serving as the worker machine that execute our build jobs. Node are basically dedicated Linux, Windows or other machines that handle build execution, allowing for parallel processing and increased performance for large project.<br>
+![CI for feature branch B](./image/JA-3.png) <br>
+<br>
+Node has a configurable number of **Executors**, which is the next component, which we will be talking about, which are essentially slots for running build jobs concurrently, and executor is a thread for execution of tasks. More executors allow for parallel processing of multiple jobs, which will help you to speed up the build process. 
+
+<br>The number of executors assigned to a node is basically determined by the nodes available resources such as CPU and memory and the requirement of your build task. Ideally speaking, we allocate one executor for each note, which is the most secure setup. And if the task to be executed are small, assigning one executor per CPU core could be an effective approach as well.
+<br><br>
+
+**3. Agents** Agents act as an extension of Jenkins. Managing the task execution by using executors on a remote node. An agent represents a specific way a node connects to the controller. It defines the communication protocol and the authentication mechanism used.
+For example, you might have a Java agent connecting, using JNLP or a SSH agent connecting,
+using the secure shell protocol. Any tools required for the build and the test processes are installed on the node
+where the agent runs. We can also leverage docker containers as build agents instead of installing tools and dependencies directly on a dedicated worker node. You can define a Docker image containing all the necessary software for your build jobs. And this is well suited for scenarios where build job requires specific software versions or have complex dependencies. Finally, when you're using a Docker agent, each build job runs in a clean, isolated container Ensuring consistent environments and preventing conflicts between multiple projects. Similarly, we can also utilize Kubernetes clusters to dynamically provision and manage build agents as ports. This allows for on demand scaling and efficient resource utilization. <br> <br>
+![CI for feature branch B](./image/JA-4.png) <br>
+
+So let's put it all together. Assume we have a Jenkins controller node connected to two worker nodes. You define jobs and pipelines within the controller using its UI, CLI or REST APIs.<br>
+![CI for feature branch B](./image/JA-5.png) <br>
+ The controller identifies available executors on connected nodes And then schedules and distributes jobs to the available executors on nodes.<br>
+ ![CI for feature branch B](./image/JA-6.png) <br>
+The nodes execute the jobs using the allocated resources.<br>
+![CI for feature branch B](./image/JA-7.png) <br>
+ Once the execution completes, the controller receives results and feedback from the nodes, providing the build status, the logs, and the artifacts. <br>
+ ![CI for feature branch B](./image/JA-8.png) <br>
+ This distributed architecture allows you to scale your Jenkins setup by adding more nodes with additional executors. This way you can handle complex workflows. and large project efficiently and ensuirng smooth and automated CICD pipelines. <br>
