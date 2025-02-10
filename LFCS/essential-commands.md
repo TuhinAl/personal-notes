@@ -329,3 +329,41 @@ When the sticky bit is set on a directory, it means that only the owner of the f
 ![Search Name](essential-comman-image/sed.png) <br>
 ![Search Name](essential-comman-image/sed-2.png) <br>
 ![Search Name](essential-comman-image/cut.png) <br>
+
+
+**Search File:**
+* `$ grep -i 'pattern' /etc/os-release` # case insensitive search <br>
+* `$ grep -r 'pattern' /etc/` # recursive search <br>
+![Search Name](essential-comman-image/recursive-grep-search.png) <br>
+* `$ grep -w 'pattern' /etc/os-release` # whole word search <br>
+* `$ grep –vi 'centos' /etc/os-release` # invert match <br>
+![Search Name](essential-comman-image/word-grep-search.png) <br>
+![Search Name](essential-comman-image/only-matching.png) <br>
+
+
+Regex Operators:
+^ # Start of the line
+$ # End of the line
+. # Any character
+* # Zero or more occurrences
++ # One or more occurrences
+{} # Range of occurrences
+[] # Character class
+() # Grouping
+? # Zero or one occurrence
+| # Alternation
+[^] # Negation
+
+`$ grep '^#' /etc/login.defs` # Means that we are looking for lines that start with a hash symbol.
+`$ grep –v '^#' /etc/login.defs` # Means that we are looking for lines that do not start with a hash symbol.
+`$ grep '^PASS' /etc/login.defs` # Means that we are looking for lines that start with the word PASS.
+![Search Name](essential-comman-image/dollar-regex.png) <br>
+![Search Name](essential-comman-image/match-any.png) <br>
+`$ grep '.' /etc/login.defs` # 
+`$ grep '\.' /etc/login.defs`
+![Search Name](essential-comman-image/start-match.png) <br>
+![Search Name](essential-comman-image/word-grep-search.png) <br>
+
+**Extended Regular Expression:**
+* `$ grep -E 'pattern' /etc/os-release` # extended regular expression <br>
+![Search Name](essential-comman-image/extend-grep.png) <br>
