@@ -250,3 +250,42 @@ Ans: We can pass the parameter to the Jenkins Job at runtime by using the `Build
 
 **Anatomy of the Build**
 #### Buildi Application Manually: get the application on Jenkins Machine:
+
+There are some Lab in this section.
+
+### Jenkins Plugins:
+Jenkins Plugins are the building blocks of Jenkins. Jenkins Plugins are used to extend the functionality of Jenkins. Jenkins Plugins are used to integrate Jenkins with other tools. Jenkins Plugins are used to automate the process of Continuous Integration and Continuous Deployment. <br>
+Plugins are basically enhance the core functionality of the software. Same case is also applicable for jenkins. Jenkins plugins are used to extend the functionality of Jenkins. Jenkins plugins are used to integrate Jenkins with other tools. Jenkins plugins are used to automate the process of Continuous Integration and Continuous Deployment. Jenkins plugins are used to automate the process of Continuous Integration and Continuous Deployment. <br>
+
+Jenkins Core functionality is very limited. Jenkins Core functionality is limited to the following:
+* Web Interface
+* Job Scheduler
+* Script Executor
+
+
+**Running Jenkins with No Plugins:**
+#### Installin and Using plugin
+#### Standard Jenkins Build with Manual Plugin 
+#### Jenkins Build Publish and Notify
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
