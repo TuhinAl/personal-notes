@@ -104,13 +104,13 @@ continue servicing requests.
 So, Kafka Broker is a software application that you will run on one or more computers.
 Kafka broker will handle all the work to accept messages from producer, store it reliably in topic
 partitions, and replicate it across other brokers in the cluster.
-![alt text](/k-image/broker/broker-1.png)
+![alt text](/kafka/k-image/broker/broker-1.png)
 
 
 #### 2. Leader Follower roles and Leadership balance:
 Kafka Broker will act as a leader and other Kafka brokers will act as followers.
 
-![alt text](/k-image/broker/broker-1.png)
+![alt text](/kafka/k-image/broker/broker-2.png)
 In this diagram, I have three Kafka brokers. One Kafka broker acts as a leader, and other two Kafka brokers act as followers.
 
 **A leader is responsible for handling all read and write requests for partitions in a topic.** 
@@ -142,9 +142,9 @@ To avoid bottlenecks.
 Every Kafka broker can be a leader and a follower at the same time.
 
 Please See the Diagram:
-![alt text](/k-image/broker/LF-1.png)
-![alt text](/k-image/broker/LF-2.png)
-![alt text](/k-image/broker/LF-3.png)
+![alt text](/kafka/k-image/broker/LF-1.png)
+![alt text](/kafka/k-image/broker/LF-2.png)
+![alt text](/kafka/k-image/broker/LF-3.png)
 
 Kafka installing guide with `single-broker` and `multi-broker` with `KRaft` in Linux
 
@@ -376,7 +376,7 @@ When sending a new message to Kafka topic, we will also specify the partition wh
 partition nor key is provided, then Kafka producer will distribute messages across partitions in a round-robin fashion, 
 ensuring a balanced load.
 <br>
-![alt text](/k-image/spring-project-producer/producer-task.png)
+![alt text](/kafka/k-image/spring-project-producer/producer-task.png)
 <br>
 If a partition is not specified but a message key is provided, then Kafka will hash the key and use the result 
 to determine the partition, and this ensures that all messages with the same key go to the same partition.Another
@@ -400,7 +400,7 @@ style, which means that it will wait for acknowledgement from Kafka Broker to co
 successfully received and stored before it proceeds with sending next message or performing other operations. Because Kafka Producer
 is waiting to receive a response, it is blocked or it is on hold until the response from Kafka Broker is received.
 <br>
-![alt text](/k-image/spring-project-producer/synchronous.png)
+![alt text](/kafka/k-image/spring-project-producer/synchronous.png)
 <br>
 In this diagram, I use synchronous communication style between mobile application and spring boot microservices
 and between Kafka Producer and Kafka Broker.
@@ -417,7 +417,7 @@ style that is called **asynchronous communication.**
 
 #### Kafka Producer - A use case for asynchronous communication style
 
-![alt text](/k-image/spring-project-producer/asynchronous.png)
+![alt text](/kafka/k-image/spring-project-producer/asynchronous.png)
 
 #### Kafka Producer Configuration Properties
 
@@ -462,7 +462,7 @@ the storage requirement and network traffic between brokers
 be considered as successful. So with this configuration, we say that when a message is sent to this topic, at least two 
 replicas must acknowledge that the data is stored successfully.
 
-![alt text](/k-image/broker/broker-2.png)
+![alt text](/kafka/k-image/broker/broker-2.png)
 
 //Todo Spring Boot code snippet:
     event-class, service-class
@@ -511,7 +511,7 @@ if the event/data critial is NOT important and it is okay if you lose some messa
 ● spring.kafka.producer.acks=0    //Does not wait for an acknowledgement.
 ```
 
-![alt text](/k-image/broker/replica-1.png)
+![alt text](/kafka/k-image/broker/replica-1.png)
 To configure a Kafka producer to wait for acknowledgments, set acks to control durability:
 
 1. `acks = "all"`: The producer waits for all in-sync replicas to acknowledge the record, providing strong durability guarantees since data won't be lost as long as one replica remains live.
@@ -521,7 +521,7 @@ To configure a Kafka producer to wait for acknowledgments, set acks to control d
 
 Using acks = "all" is more reliable, while acks = "1" balances durability with speed.
 
-![alt text](/k-image/broker/replica-2.png)
+![alt text](/kafka/k-image/broker/replica-2.png)
 
 Configuring Kafka producer acknowledgments to wait for all followers doesn’t mean it waits on every broker. 
 Instead, it only waits for in-sync replicas (those up-to-date with the leader). The replication factor 
@@ -546,7 +546,7 @@ Kafka producer configurations help manage message delivery and retries effective
    which covers the entire send process, retries, and acknowledgment.
 
 These settings help balance performance, reliability, and latency in Kafka messaging.
-![alt text](/k-image/producer/producer-retries-1.png)<br>
+![alt text](/kafka/k-image/producer/producer-retries-1.png)<br>
 
 I have set the minimum in sync replicas property (`--config min.insync.replicas=3`) with a value of three.This means that
 my Kafka producer will wait for acknowledgement from the Leader, and it will wait for acknowledgement from other
@@ -556,7 +556,7 @@ But what happens if one of the followers goes down and we don't have this in syn
 at the moment? The default behavior of Kafka producer in this case is to retry the send operation for a very large number
 of times, or until the delivery timeout is reached, and the default timeout value is two-minutes.
 
-![alt text](/k-image/producer/producer-retries-2.png)<br>
+![alt text](/kafka/k-image/producer/producer-retries-2.png)<br>
 
 
 `spring.kafka.producer.retries=10` property: it determines how many times producer will try to send the message before marking it as failed.
@@ -569,9 +569,9 @@ In Kafka documentation it is mentioned that developers are encouraged to control
 `spring.kafka.producer.properties.delivery.timeout.ms=120000` use this configuration property to configure the maximum time.
 Producer should wait for a message to be delivered before raising a timeout exception.
  
-![alt text](/k-image/producer/producer-retries-3.png)<br>
+![alt text](/kafka/k-image/producer/producer-retries-3.png)<br>
 
-![alt text](/k-image/producer/producer-retries-4.png)<br>
+![alt text](/kafka/k-image/producer/producer-retries-4.png)<br>
 
 
 #### Configure Producer Acknowledgments in Spring Boot Microservice: 
@@ -739,7 +739,7 @@ can be configured through configuration properties. Kafka consumer reads message
 There is no order guarantee which messages from which partitions will be read first, but it does read messages in order 
 within a single partition.
 
-![alt text](/k-image/consumer/consumer-1.png)
+![alt text](/kafka/k-image/consumer/consumer-1.png)
 
 Messages within a single partition they are always read in order, but there is no order guarantee between partitions.
 For example, there is no guarantee that messages from partition one will always be read before messages from partition two.
