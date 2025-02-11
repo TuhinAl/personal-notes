@@ -140,7 +140,8 @@ Jenkins Pligin are essentially JAR files. They come in s afile with **hpi and jp
     * 
 
 
-```#Build 
+```
+#Build 
 curl -s https://api.adviceslip.com/advice > advice.json
 cat advice.json
 
@@ -152,4 +153,229 @@ cat advice.json | jq -r .slip.advice > advice.message
 sudo apt-get install cowsay -y
 echo $PATH
 export PATH="$PATH:/usr/games:/usr/local/game"
-cat advice.message | cowsay -f $(ls /usr/share/cowsay/cows | shuf -n 1)```
+cat advice.message | cowsay -f $(ls /usr/share/cowsay/cows | shuf -n 1)
+```
+
+
+**Controller Failure - Freestyle Project:**
+slee 3600 command used to simulate a controller failure. 
+
+stop the jenkins server, and then restart it. 
+```sudo systemctl stop jenkins``` <br>
+```sudo systemctl start jenkins``` <br>
+
+**Jenkins Fingerprints:**
+It is used to track file usage across the Jenkins Jobs. When a file is archived as an artifact, Jenkins creates a fingerprint for the file. This fingerprint is then used to track the file across all jobs that use it. This allows Jenkins to keep track of which jobs are using which files and to ensure that the correct version of the file is used in each job. <br>
+The fingerprint of a file is simply a MD5 checksum. Jenkins keeps a record of which builds used each checksum. This helps us to see which projects depends on which file versions. <br>
+
+Finally Jenkins doesn't store the actual file to save the space. It only store the checksum and usage information. <br>
+`$ JENKINS_HOME/fingerprints/` directory contains the fingerprint information. <br>
+
+1. /var/lib/jenkins/plugins/ e jeye `direct` link use kore download kore
+2. web upload Advance Jenkins -> Advanced Settings -> Upload Plugin
+
+Different way of installing plugins in Jenkins:
+* **Using the Jenkins UI:** 
+    - Navigate to the Jenkins dashboard.
+    - Click on Manage Jenkins.
+    - Click on Manage Plugins.
+    - Click on the Available tab.
+    - Search for the plugin you want to install.
+    - Select the plugin and click on Install without restart.
+    - Click on the checkbox to restart Jenkins after installation.
+    - Click on the Restart Jenkins when installation is complete and no jobs are running checkbox.
+    - Click on the Install button.
+* **Using the Jenkins CLI:** 
+    - Download the plugin HPI file.
+    - Run the following command to install the plugin:
+    - java -jar jenkins-cli.jar -s http://localhost:8080/ install-plugin /path/to/plugin.hpi
+    - Restart Jenkins after installing the plugin.
+* **Using the Jenkins REST API:**
+
+# Pipeline and Jenkinsfile:
+
+Jenkins Pipeline projects often simply called pipelines.
+
+![Pipeline](./image/pipeline/pipeline-1.png) <br>
+Pipelines are defined using a script called Jenkins file. This script is typically written in groovy lag. this is the basic jenkins file below: <br>
+![Pipeline](./image/pipeline/pipeline-2.png) <br>
+
+**Types of Pipeline Projects:**
+
+![Pipeline](./image/pipeline/types-of-pipeline-project.png) <br>
+
+**Freestyle vs Pipeline:**
+Pipeline projects offer stages with parallel processing of task within each stage, detailed control and easier version control. Pipelines excels at handling complex workflows with their scripting capabilities and staged based structure<br>
+Freestyle have a rigid sequnential order of the steps. It rely on the web interface for configuration, making it less flexible and harder to track changes. suitable for basic automation.<br>
+![Pipeline](./image/pipeline/pipeline-vs-freestyle.png) <br>
+<br><br>
+**Benefits of Pipeline Projects:**
+
+1. Pipelines are defined in a Jenkins file configuration file, which can be stored alongside your project code. This enables version control, collaborative editing, and easier tracking of changes. 
+2. Pipelines are resilient by design and can survive unexpected restart of the Jenkins controller, ensuring your workflow doesn't stall due to technical hiccups, 
+3. Pipelines can be paused at specific points, allowing for manual intervention or approval before continuing the build process.
+4. Pipelines excel at handling complex CICD requirements features like working, joinig stages looping parallel execution enable efficient orchestration of complex workflows.
+5. The pipeline plugin allows for custom extensions to its domain specific language, providing flexibility to tailor it to your specific needs.<br><br>
+Additionally It integrates seamlessly with numerous Jenkins Plugins further expanding its capability and finally Pipelines promotes efficient build management by reducing the number of jobs needed comapred to the project..<br><br>
+
+![Pipeline](./image/pipeline/pipeline-benefist.png) <br>
+
+### Additional Pipekine configuration:
+**Jenkinsfile:**
+Jenkinsfile is a text file that contains the definition of a Jenkins Pipeline and is checked into source control. It is written in Groovy and allows you to define the stages, steps, and other configurations for your pipeline. Jenkins reads the Jenkinsfile from your source control repository and uses it to create and run the pipeline. <br>
+
+Jenkins file serves as the cornerstone of you CICD pipelines. It is text-based script return a groovy domain specific language that defines the entire build process. It is stored in the source code repository alongside the application code, allowing for version control and collaborative editing. <br>
+It is designed for defining and automating the various stages of our software delivery process.<br>
+
+Jenkins file is structured in distinct stages, each representing a specifiec phase in th CICD pipeline. Common stage Includes source code management for checking out code from VCS like Github, Gitlab.
+
+**Build Stage:** for compiling, building and packaging our application. 
+**Test Stage:** for running unit tests, integration tests, and other types of testing.
+**Deploy Stage:** forpush our build artifacts to staging all production environment.
+
+**Essential Syntax and Components of Jenkinsfile**
+### Directives in Jenkinsfile:
+1. **Pipeline Block:** The pipeline block is the main block in the Jenkinsfile and defines the entire pipeline. It contains all the stages, steps, and other configurations for the pipeline. The pipeline block is defined using the pipeline keyword.
+
+```
+pipeline{
+
+}
+```
+2. **Agent Block:** (specifies the execution environemnt by pipeline stages.) The agent block is used to specify where the pipeline will run. It defines the node or label on which the pipeline will execute. The agent block is optional, and if not specified, the pipeline will run on the Jenkins controller.
+
+```
+pipeline{
+    agent any // docker {image 'ubuntu:alpine'}
+}
+```
+3. **Stages Block:** The stages block is used to define the stages of the pipeline. Each stage represents a specific phase in the pipeline, such as build, test, or deploy. The stages block contains one or more stage blocks. <br>
+
+Stages refers to the entire concept of structuring your pipeline into different phases. It is a general term encomapssing the idea of breaking down our workflow into meaningful steps. Within Stages, we can have one or more steps. The step block within stage list the individual commands or actions to be executed in that stage. Step can involve shell commands.
+
+```pipeline{
+    agent any // docker {image 'ubuntu:alpine'} 
+    stages{
+        stage('Build'){
+            agent {docker 'ubuntu:alpine'} //this stage is going to run on a docker container with the image ubuntu:alpine. This ensures that the environement has the necessary tool for building our project. 
+            steps{
+                sh 'mvn clean package'
+            }
+        }
+        stage('Unit Test'){
+            steps{
+                script{
+                    junit 'target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Deployment'){
+            //optional deploy stage, which copies the build jar or WAR file to a production server using a shell script.
+            when{
+                expression{branch == 'main'}
+            }
+            steps{
+                sh 'deploy.sh'
+            }
+        }
+    }
+}
+```
+
+In this example the Pipelines runs on any available Jenkins agent because we have provided agent any at the root level.
+![Pipeline](./image/pipeline/jenkinsfile.png) <br>
+
+
+### Jenkinsfile Directives:
+**Environment Directives:** Its defines key value pairs to set environment variables for all stages or for a specific stage or for specific stages depending on the placement. <br>
+
+```
+pipeline{
+    agent any
+    environment{
+        JAVA_HOME = '/usr/lib/jvm/java-11-openjdk-amd64'
+        MAVEN_HOME = '/usr/share/maven'
+    }
+    stages{
+        stage('Build'){
+            steps{
+                sh 'mvn clean package'
+            }
+        }
+    }
+}
+```
+<br><br>
+
+![Pipeline](./image/pipeline/jenkinsfile-directive.png) <br>
+
+**Post:**
+The post block is used to define post-build actions for the pipeline. It allows you to specify actions to be taken after the pipeline has completed, such as sending notifications, archiving artifacts, or cleaning up resources. The post block contains one or more post conditions, such as always, success, failure, unstable, and changed. Each post condition can contain one or more post actions, such as email, archive, junit, and slack. <br>
+The Post directive  which executes one or more steps after a pipeline run finishes. Regardless of the success or failure of the pipeline status. Common use cases includes *sending notifications* or *cleaning up temporary files* after the pipeline has completed. <br>
+
+```
+pipeline{
+    agent any
+    stages{
+        stage('Build'){
+            steps{
+                sh 'mvn clean package'
+            }
+        }
+    }
+    post{
+        always{
+            echo 'This will always run'
+        }
+        success{
+            echo 'This will run only if the build is successful'
+        }
+        failure{
+            echo 'This will run only if the build fails'
+        }
+    }
+}
+```
+![Pipeline](./image/pipeline/jenkinsfile-directive.png) <br>
+
+
+**Notification** can be sent to the team members using the email directive. After the pipeline has completed, we can also senf notification by integrating with plugin slack, slack notifier to sent notification to various Slac channel. <br>
+
+**Script Block** is used to execute groovy code within the pipeline. It is used to define custom logic or to perform complex operations that cannot be achieved using the predefined steps. <br>
+
+The Script directive can be used to encapsulate a block of groovy code for more complex logic within a stage step. It provides access to pipeline variables, method and Jenkins functionalities.In this example, The Script block is used to loop through a list of files.<br>
+![Pipeline](./image/pipeline/jenkins-directive-2.png) <br>
+
+**When** directive defines a condition that must be met for a stage to run. It allows you to control the execution of a stage based on the result of a previous stage, the branch being built, or other conditions. The when directive can be used to skip a stage, run a stage only on specific branches, or run a stage based on the result of a previous stage. <br>
+
+
+When directive defines condition under which, a stage should be executed. It can commonly be used for conditional branching, based on factors like branch name or the build result.
+
+**Credentials directive** provide access to predefined credentials stored in Jenkins like the API Case, password or any secret files. It can be used with tools or script that require authentication.
+<br>  It allows you to securely access sensitive information such as passwords, API keys, and SSH keys within your pipeline. The credentials directive can be used to retrieve credentials from the Jenkins credential store and use them in your pipeline. <br>
+
+![Pipeline](./image/pipeline/jenkins-directive-3.png) <br>
+
+
+**Input Directive:** The input directive is used to pause the pipeline and wait for user input. It allows you to prompt the user for input before proceeding with the pipeline. The input directive can be used to request approval, provide additional information, or trigger manual intervention. <br>
+
+It allows users to provide input during pipeline execution through a UI. it requires plugins lag, the pipeline utility steps plugin. <br><br>
+
+Parameter Directives:
+The parameters directive is used to define parameters for the pipeline. It allows you to prompt the user for input when the pipeline is run. The parameters directive can be used to pass values to the pipeline, such as branch names, build numbers, or other variables. <br>
+
+Parameter sirective which can be used for defining parameters that can be passed to the pipeline during execution, allowing synamic configuration of the pipeline. <br> <br>
+
+![Pipeline](./image/pipeline/jenkins-directive-4.png) <br>
+
+**Stash and Unstash directive:** can store and retrieve the artifacts. It could be files, well outputs between pipeline stages or jobs runnig on different nodes. It is usefull for caching build results or sharing data across Jobs. <br>
+in the image example, we are stashing build artifacts and using them in the deploy stage, which might rn on different Node. <br>
+
+**Parallel Stage:** The parallel directive is used to run multiple stages in parallel. It allows you to execute multiple tasks concurrently, which can help speed up the build process. The parallel directive can be used to run tasks that are independent of each other, such as running tests in different environments or building different components of an application. <br>
+It executes multiple stages concurrently to optimize pipeline execution time, which can help speed up the build process. It is useful for running tasks that are independent of each other, such as running tests in different environments or building different components of an application. <br>
+
+It requres stages to be independent and not relyon ouptut from each other. <br>
+
+![Pipeline](./image/pipeline/jenkins-directive-5.png) <br>
+
+**Timeout Directive:** The timeout directive is used to set a time limit for a stage to complete. It allows you to specify a maximum duration for a stage to run, after which the stage will be aborted. The timeout directive can be used to prevent long-running stages from blocking the pipeline. <br>
