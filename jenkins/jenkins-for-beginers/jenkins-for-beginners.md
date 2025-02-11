@@ -66,3 +66,48 @@ The nodes execute the jobs using the allocated resources.<br>
  Once the execution completes, the controller receives results and feedback from the nodes, providing the build status, the logs, and the artifacts. <br>
  ![CI for feature branch B](./image/JA-8.png) <br>
  This distributed architecture allows you to scale your Jenkins setup by adding more nodes with additional executors. This way you can handle complex workflows. and large project efficiently and ensuirng smooth and automated CICD pipelines. <br>
+
+ ## Types of Jenkins Projects:
+ Jenkins offer various project types also known as Jobs to automate different workflows.
+ **Fressstyle Project:**
+ It allows us to define custom builds steps and configurations for any project. It is the most flexible project type and can be used to create simple or complex build pipelines. <br>
+
+**Pipeline Project:** It is a powerful approach, uses a specific code to define the entire build pipeline. It includes stages, steps and condition for complex build process and continuous delivery workflows. <br>
+
+**Multibranch Pipeline:** 
+Multi-branch pipelines build upon the pipeline projects by allowing you to manage builds from multiple branched in a single code repository. It's ideal for handling project with frequent branching and development activities. <br>
+
+**Maven Project:**
+Maven project  streamlined building projects that use Maven, a popular build automation tool for Java projects. It allows you to define Maven goals and options for building, testing and deploying your Java applications. Jenkins automatically detects and executes maven commands based on th POM.xml file<br>
+
+**Multi Configuration Project:**
+Multi configuration projects lets you run the same build process with different configurations. It's useful for testing your application across multiple environments, platforms, or versions. <br>
+
+**Organizational Folder:** This aren't a project type themeselves, but rather a way to organize your Jenkins project into a hierarchical structure for better management, especially when dealing with a large number of project in addition ot the core types. It allows you to organize your Jenkins jobs into folders based on your organizational structure. It's useful for managing large number of jobs and pipelines. <br>
+![CI for feature branch B](./image/project-type/project-type.png) <br>
+
+### FreeStyle Project:
+It allows you to define a series fo steps to be executed in a sequential order for automating tasks like building testing and deploying your project. The project often **chained** together. <br>
+![CI for feature branch B](./image/project-type/free-style-project.png) <br>
+
+So imagine building a mobile application. A freestyle project in Jenkins would be like a simple tool list for the build process. So you can have a project for cloning your code on running the unit test cases. You can have another project for building a docker image and publishing it to a container repository, and you can have a third project for Deploying the application. So it's like a simple to-do list with straightforward, basic tasks. <br><br>
+![CI for feature branch B](./image/project-type/free-stype-limitation.png) <br>
+**Limitations:** 
+
+1. Project can only define steps in a simple sequence, even though they can be linked together via upstream and downstream jobs.
+2. Configuration happens entirely through the graphical user interface, making it less flexible and centrally manageable. 
+3. Modern continuous delivery pipelines often involve complex workflows that FreeStyle projects struggle to handle. Even achievable task might result in heavy, hard to maintain and unclear configurations. 
+
+4. Many continuous delivery and deployment goals are simply not possible or become overtly complex with freestyle projects. 
+5. **FreeStyle projects cannot be resumed after a Jenkins controller failure.**
+
+In essence, freestyle projects are a **legacy approach**. While they might work for basic cases, they lack the flexibility and maintainability needed for most modern continuous delivery or deployments pipelines.
+
+**Working with FreeStyle Job:**
+1. **Creating a FreeStyle Job:** 
+    - Click on **New Item** on the Jenkins dashboard.
+    - Enter a name for the job and select **Freestyle Project**.
+    - Click **OK** to create the job.
+    - Configure the job by adding build steps, post build actions, and other settings.
+    - Click **Save** to save the job configuration.
+    - Click **Build Now** to run the job.
