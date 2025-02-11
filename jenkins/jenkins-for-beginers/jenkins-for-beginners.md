@@ -111,3 +111,45 @@ In essence, freestyle projects are a **legacy approach**. While they might work 
     - Configure the job by adding build steps, post build actions, and other settings.
     - Click **Save** to save the job configuration.
     - Click **Build Now** to run the job.
+
+**Plugins:**
+Jenkins Pligin are essentially JAR files. They come in s afile with **hpi and jpi** extensions.
+
+![CI for feature branch B](./image/project-type/plugins-1.png) <br>
+![CI for feature branch B](./image/project-type/plugins-2.png) <br>
+![CI for feature branch B](./image/project-type/plugins-3.png) <br>
+
+**Working with a FreeStyle Job:**
+
+**Lab: create 3 jobs and chain them together.**
+1. ascii-build-job: 
+    * Create a new freestyle project.
+    * Add a build step to execute a shell command that prints an ASCII art message.
+    * Save the job.
+    * configure ascii-test-job to run after (post build) ascii-build-job.
+    * Give the 'Copy Artifact' permission to ascii-test-job.
+    * post build action to Archive artifacts from ascii-build-job.
+2. ascii-test-job:
+    * Create a new freestyle project.
+    * Add a build step to execute a shell command that tests the ASCII art message.
+    * Save the job.
+    * build step 'Copy Artifact' from ascii-build-job.
+
+
+3. ascii-deploy-job:
+    * 
+
+
+```#Build 
+curl -s https://api.adviceslip.com/advice > advice.json
+cat advice.json
+
+#Test to make sure the advice message has more than 5 words.
+cat advice.json | jq -r .slip.advice > advice.message
+[ $(wc -w < advice.message) -gt 5 ] && echo "Advice has more than 5 words" || (echo "Advice - $(cat advice.message) has 5 words or less. Exiting" && exit 1)
+
+#Deploy
+sudo apt-get install cowsay -y
+echo $PATH
+export PATH="$PATH:/usr/games:/usr/local/game"
+cat advice.message | cowsay -f $(ls /usr/share/cowsay/cows | shuf -n 1)```
