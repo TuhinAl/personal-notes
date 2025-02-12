@@ -379,3 +379,87 @@ It requres stages to be independent and not relyon ouptut from each other. <br>
 ![Pipeline](./image/pipeline/jenkins-directive-5.png) <br>
 
 **Timeout Directive:** The timeout directive is used to set a time limit for a stage to complete. It allows you to specify a maximum duration for a stage to run, after which the stage will be aborted. The timeout directive can be used to prevent long-running stages from blocking the pipeline. <br>
+
+### Simple Pipeline Job:
+
+Lab-1:
+1. Create a new pipeline job(Github + Maven). 
+2. add Maven installation in Jenkins tools configuration.(Version 3.9.8)
+3.
+
+ ```
+pipeline {
+    agent any
+
+    tools {
+        // Install the Maven version configured as "M3" and add it to the path.
+        maven "M398"
+    }
+
+    stages {
+        stage('Echo Version'){
+            steps{
+                sh 'echo Print Maven Version'
+                sh 'mvn -version'
+            }
+        }
+        
+    }
+}
+
+```
+
+### Build and Test via Pipeline:
+Lab: create Pipeline for small spring boot application.
+```
+pipeline {
+    agent any
+
+    tools {
+        // Install the Maven version configured as "M3" and add it to the path.
+        maven "M398"
+    }
+
+    stages {
+        stage('Echo Version'){
+            steps{
+                sh 'echo Print Maven Version'
+                sh 'mvn -version'
+            }
+        }
+        stage('Build'){
+            steps {
+                // get some code from github repository
+                git branch: 'main', url: 'https://github.com/jenkins-kk-demo/parameterized-pipeline-job-init.git'
+                
+                //Run Maven Package SMD
+                sh "mvn clean package -DskipTests=true"
+            }
+        }
+        stage('Unit Test'){
+            steps{
+                sh "mvn test"
+            }
+        }
+    }
+}
+```
+### Labs:
+ref: https://github.com/jenkins-kk-demo/parameterized-pipeline-job-init
+1. Create a new pipeline using script: https://github.com/sidd-harth/jenkins-hello-world
+2. Pipeline with SCM: https://github.com/sidd-harth/jenkins-hello-world
+3. Blue Ocean Plugin:
+4. Parameterize Pipeline Job:
+
+## Jenkins Security Overview:
+
+![Security](./image/security/security-1.png) <br>
+![Security](./image/security/authN-authZ.png) <br>
+Authentication is the process of verifying someone's identity, provide credentials like username, password and API Token. and the system checks if tehy are valid and belong to real user. Authorization is the process of determining what a user is allowed to perform after they have been authenticated. Based on the provided Identity and asigned permissions, the system determines what actions you can perform such as read, write, delete. <br>
+![Security](./image/security/jenkins-authN.png) <br>
+![Security](./image/security/jenkins-authN-approach.png) <br>
+![Security](./image/security/jenkins-authZ.png) <br>
+![Security](./image/security/jenkins-authz-2.png) <br>
+
+### Jenkins Authentication:
+Practical Lab
