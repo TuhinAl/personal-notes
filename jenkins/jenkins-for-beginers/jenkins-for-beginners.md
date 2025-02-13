@@ -462,4 +462,48 @@ Authentication is the process of verifying someone's identity, provide credentia
 ![Security](./image/security/jenkins-authz-2.png) <br>
 
 ### Jenkins Authentication:
-Practical Lab
+
+
+Lab- Create a free style job for a simple shell command.
+Hints: you may need to install NodeJS plugin in Jenkins and set Nodejs gloabl environeent from Jenkins Manage -> Tools
+and then update Job configuration 'Provide Node & npm bin/ folder to PATH' in environment section. 
+
+Lab-2: follow git repo: https://github.com/sidd-harth/solar-system-gitea for Jenkins Oraganization Folder Project. This is for Solar-system project.
+
+```
+pipeline {
+    agent any
+    tools {
+        nodejs 'nodejs-22-6-0' // Name from "Global Tool Configuration"
+    }
+    stages {
+        stage('VM Node Version') {
+            steps {
+                sh '''
+                    node -v
+                    npm -v
+                '''
+            }
+        }
+    }
+}
+```
+
+Second Step:
+
+```
+pipeline {
+    agent any
+    tools {
+        nodejs 'nodejs-22-6-0' // Name from "Global Tool Configuration"
+    }
+    stages {
+        stage('Installing Dependecies') {
+            steps {
+                sh 'npm install --no-audit'
+            }
+        }
+    }
+}
+
+```
