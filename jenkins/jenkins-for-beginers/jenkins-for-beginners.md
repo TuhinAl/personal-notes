@@ -507,3 +507,17 @@ pipeline {
 }
 
 ```
+
+To Deploy in AWS, Prerequisites are:
+1. create Access key and Secret key in AWS IAM.
+2. Install AWS CLI in Jenkins (optional).
+3. Configure AWS CLI in Jenkins (optional).
+4. Download AWS Step plugin
+5. Configure AWS credentials <br>
+![Pipeline](./image/AWS/create-aws-cred.png) <br>
+
+5. Download SSH agent plugin (for private key) (type : **SSH Username with private Key**) <br>
+![Pipeline](./image/AWS/ssh-key-pk.png) <br>
+![Pipeline](./image/AWS/ssh-2.png) <br>
+![Pipeline](./image/AWS/region.png) <br>
+6. 
