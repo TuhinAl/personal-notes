@@ -1,0 +1,37 @@
+Edit the /root/deployment.yml manifest file as below:
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-web-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flask-app
+  template:
+    metadata:
+      labels:
+        app: flask-app
+    spec:
+      initContainers:
+      - name: init-sleep
+        image: busybox
+        command: ["sleep", "30"]
+      containers:
+      - name: flask
+        image: rakshithraka/flask-web-app
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+           memory: "256Mi"               #edited
+           cpu: "200m"                   #edited
+          limits:
+           memory: "380Mi"               #edited
+           cpu: "300m"                   #edited
+
+
+Deploy the application using the modified manifest file
+
+```controlplane  ~ ➜  kubectl replace -f /root/deployment.yml```
