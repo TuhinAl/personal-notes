@@ -140,35 +140,35 @@ remember you only need to change permission on of the hard links. That's because
 
 
 
-`$ ln file.txt link.txt` # Create a hard link to a file
-`$ ln directory link` # Create a hard link to a directory
-`$ ls -i file.txt link.txt` # Display the inode number of a file
-`$ find / -inum inode_number` # Find a file by its inode number
-`$ rm file.txt` # Remove a file
-`$ rm link.txt` # Remove a hard link
-`$ rm -i file.txt` # Remove a file with confirmation
-`$ rm -f file.txt` # Remove a file without confirmation
-`$ rm -r directory` # Remove a directory
-`$ rm -rf directory` # Remove a directory without confirmation
-`$ rm -i link.txt` # Remove a hard link with confirmation
-`$ rm -f link.txt` # Remove a hard link without confirmation
-`$ rm -i directory` # Remove a directory with confirmation
-`$ rm -rf directory` # Remove a directory without confirmation
-`$ ls -l` # List files and directories
-`$ ls -lh` # List files and directories with human-readable sizes
-`$ ls -lS` # List files and directories by size
-`$ ls -lt` # List files and directories by modification time
-`$ ls -lR` # List files and directories recursively
-`$ ls -la` # List all files and directories
-`$ ls -l | grep file` # List files and directories and filter the output with grep
-`$ ls -l | sort -k 5` # List files and directories and sort the output by the fifth column
-`$ ls -l | sort -k 5 -r` # List files and directories and sort the output by the fifth column in reverse order
-`$ ls -l | sort -k 5 -n` # List files and directories and sort the output by the fifth column numerically
-`$ ls -l | sort -k 5 -nr` # List files and directories and sort the output by the fifth column numerically in reverse order
-`$ ls -l | sort -k 5 -n | head -n 5` # List files and directories and sort the output by the fifth column numerically and display the first five lines
-`$ ls -l | sort -k 5 -n | tail -n 5` # List files and directories and sort the output by the fifth column numerically and display the last five lines
-`$ ls -l | sort -k 5 -n | head -n 5 | tail -n 3` # List files and directories and sort the output by the fifth column numerically and display the first five lines and the last three lines
-`$ ls -l | sort -k 5 -n | head -n 5 | tail -n 3 | wc -l` # List files and directories and sort the output by the fifth column numerically and display the first five lines and the last three lines and count the number of lines
+* `$ ln file.txt link.txt` # Create a hard link to a file <br>
+* `$ ln directory link` # Create a hard link to a directory <br>
+* `$ ls -i file.txt link.txt` # Display the inode number of a file <br>
+* `$ find / -inum inode_number` # Find a file by its inode number <br>
+* `$ rm file.txt` # Remove a file <br>
+* `$ rm link.txt` # Remove a hard link <br>
+* `$ rm -i file.txt` # Remove a file with confirmation <br>
+* `$ rm -f file.txt` # Remove a file without confirmation <br>
+* `$ rm -r directory` # Remove a directory <br>
+* `$ rm -rf directory` # Remove a directory without confirmation <br>
+* `$ rm -i link.txt` # Remove a hard link with confirmation <br>
+* `$ rm -f link.txt` # Remove a hard link without confirmation <br>
+* `$ rm -i directory` # Remove a directory with confirmation <br>
+* `$ rm -rf directory` # Remove a directory without confirmation <br>
+* `$ ls -l` # List files and directories <br>
+* `$ ls -lh` # List files and directories with human-readable sizes <br>
+* `$ ls -lS` # List files and directories by size <br>
+* `$ ls -lt` # List files and directories by modification time <br>
+* `$ ls -lR` # List files and directories recursively <br>
+* `$ ls -la` # List all files and directories <br>
+* `$ ls -l | grep file` # List files and directories and filter the output with grep <br>
+* `$ ls -l | sort -k 5` # List files and directories and sort the output by the  fifth column
+* `$ ls -l | sort -k 5 -r` # List files and directories and sort the output by the fifth column in reverse order<br>
+* `$ ls -l | sort -k 5 -n` # List files and directories and sort the output by the fifth column numerically<br>
+* `$ ls -l | sort -k 5 -nr` # List files and directories and sort the output by the fifth column numerically in reverse order<br>
+* `$ ls -l | sort -k 5 -n | head -n 5` # List files and directories and sort the output by the fifth column numerically and display the first five lines<br>
+* `$ ls -l | sort -k 5 -n | tail -n 5` # List files and directories and sort the output by the fifth column numerically and display the last five lines<br>
+* `$ ls -l | sort -k 5 -n | head -n 5 | tail -n 3` # List files and directories and sort the output by the fifth column numerically and display the first five lines and the last three lines <br>
+* `$ ls -l | sort -k 5 -n | head -n 5 | tail -n 3 | wc -l` # List files and directories and sort the output by the fifth column numerically and display the first five lines and the last three lines and count the number of lines <br>
 `$ ls -l | sort -k 5 -n
 
 
