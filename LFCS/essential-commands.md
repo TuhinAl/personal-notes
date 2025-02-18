@@ -20,28 +20,31 @@ Computer(SSH Client) -> Server(SSH Daemon)
 * `$ ls -lah` # h for human redable i.e 6238 to 6.2KB
 
 1  2     3    4     5  6                 7                    8    9  10  11   12 <br>
-d**rwx**r-x**r-x**  2 root              root                 4096 Feb  5 07:02 cups
-1 # disk type / entry type
+d**rwx**r-x**r-x**  2 root              root                 4096 Feb  5 07:02 Documents <br>
+
+1. disk/file/entry type
 ![Create Link](essential-comman-image/file-type.png) <br>
-2 # permissions for the owner <br>
-3 # permissions for the group <br>
-4 # permissions for everyone else <br>
+2. permissions for the owner <br>
+3. permissions for the group <br>
+4. permissions for everyone else <br>
 ![Create Link](essential-comman-image/permission.png) <br>
 
-5 # number of hard links <br>
-6 # owner <br>
-7 # group <br>
-![Create Link](essential-comman-image/evaluating-permission.png) <br>
-![Create Link](essential-comman-image/adding-permission.png) <br>
-![Create Link](essential-comman-image/remove-permission.png) <br>
-![Create Link](essential-comman-image/exact-permission.png) <br>
-![Create Link](essential-comman-image/octal-permission.png) <br>
-![Create Link](essential-comman-image/octal-permission-2.png) <br>
-8 # size <br>
-9 # date and time of last modification <br>
-10 # name <br>
-11 # -> link <br>
-12 #  <br>
+5. number of hard links <br>
+6. owner <br>
+7. group <br><br>
+![Create Link](essential-comman-image/evaluating-permission.png) <br><br>
+![Create Link](essential-comman-image/adding-permission.png) <br><br>
+![Create Link](essential-comman-image/remove-permission.png) <br><br>
+![Create Link](essential-comman-image/exact-permission.png) <br><br>
+![Create Link](essential-comman-image/chaining-permission.png) <br><br>
+![Create Link](essential-comman-image/octal-permission.png) <br><br>
+![Create Link](essential-comman-image/octal-permission-2.png) <br><br>
+
+8. size <br>
+9. date and time of last modification <br>
+10. name <br>
+11. -> link <br>
+12.  <br>
 
 ![Create Link](essential-comman-image/change-directory.png) <br>
 
@@ -147,11 +150,12 @@ Limitations of Hard Links:
 Considerations when hard link: <br>
 1. Make sure you have the proper permissions to create the link file at the destination. <br>
 2. Make sure that all users involved have the proper permissions to access the file. <br>
-i.e for two user *John* and *Aaron*, this might mean that we need to add both their username to the same group for example family group then we would use a command to let the group family read anf write to this file.
-remember you only need to change permission on of the hard links. That's because you are actually changing permission stored y the INode <br>
 
-* `$ useradd -a -G family John` # Add a user to a group <br>
-* `$ useradd -a -G family Aaron` # Add a user to a group <br>
+i.e for two user *John* and *Aaron*, this might mean that we need to add both their username to the same group for example family group. Then we would use a command to let the group family read and write to this file.
+remember you only need to change permission on of the hard links. That's because you are actually changing permission stored by the INode <br>
+
+* `$ useradd -m -G family John` # Add a user to a group. `-m`: Creates a home directory for `John` at the default location, which is usually `/home/John`. <br>
+* `$ useradd -m -G family Aaron` # Add a user to a group <br>
 * `$ chown :family file.txt` # Change the group of a file <br>
 * `$ chmod 660 /home/aaron/Pictures/family_dog.jpg` # Change the permissions of a file <br>
 
@@ -168,14 +172,10 @@ remember you only need to change permission on of the hard links. That's because
 * `$ ls -i file.txt link.txt` # Display the inode number of a file <br>
 * `$ find / -inum inode_number` # Find a file by its inode number <br>
 * `$ rm file.txt` # Remove a file <br>
-* `$ rm link.txt` # Remove a hard link <br>
 * `$ rm -i file.txt` # Remove a file with confirmation <br>
 * `$ rm -f file.txt` # Remove a file without confirmation <br>
 * `$ rm -r directory` # Remove a directory <br>
 * `$ rm -rf directory` # Remove a directory without confirmation <br>
-* `$ rm -i link.txt` # Remove a hard link with confirmation <br>
-* `$ rm -f link.txt` # Remove a hard link without confirmation <br>
-* `$ rm -i directory` # Remove a directory with confirmation <br>
 * `$ rm -rf directory` # Remove a directory without confirmation <br>
 * `$ ls -l` # List files and directories <br>
 * `$ ls -lh` # List files and directories with human-readable sizes <br>
