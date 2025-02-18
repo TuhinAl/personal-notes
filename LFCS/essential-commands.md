@@ -5,43 +5,46 @@ SSH: Secure Shell (SSH) is a cryptographic network protocol for operating networ
 Telnet: Telnet is a network protocol used on the Internet or local area networks to provide a bidirectional interactive text-oriented communication facility using a virtual terminal connection.
 
 but SSH is more secure than Telnet because it uses encrypted communication.
-`$ ip link` - is used to check the network interfaces.
-`$ ip addr` - is used to check the IP address of the network interfaces.
-`$ ssh username@ipaddress` - is used to login to the remote machine.
-`$ telnet ipaddress` - is used to login to the remote machine.
-`$ ip a` - is used to check the IP address of the network interfaces.
+* `$ ip link` - is used to check the network interfaces.
+* `$ ip addr` - is used to check the IP address of the network interfaces.
+* `$ ssh username@ipaddress` - is used to login to the remote machine.
+* `$ telnet ipaddress` - is used to login to the remote machine.
+* `$ ip a` - is used to check the IP address of the network interfaces.
 
 Computer(SSH Client) -> Server(SSH Daemon)
 
 ## Essentials Commands:
 * **Create, Delete, Copy and Move files and directories:**
 
-`$ ls -la `  #**l**ist **a**ll files and directories in the current directory.
-`$ ls -lah` # h for human redable i.e 6238 to 6.2KB
+* `$ ls -la `  #**l**ist **a**ll files and directories in the current directory.
+* `$ ls -lah` # h for human redable i.e 6238 to 6.2KB
 
-1  2     3    4     5  6                 7                    8    9  10  11   12 
+1  2     3    4     5  6                 7                    8    9  10  11   12 <br>
 d**rwx**r-x**r-x**  2 root              root                 4096 Feb  5 07:02 cups
 1 # disk type / entry type
 ![Create Link](essential-comman-image/file-type.png) <br>
-2 # permissions for the owner
-3 # permissions for the group
-4 # permissions for everyone else
+2 # permissions for the owner <br>
+3 # permissions for the group <br>
+4 # permissions for everyone else <br>
 ![Create Link](essential-comman-image/permission.png) <br>
 
-5 # number of hard links
-6 # owner
-7 # group
+5 # number of hard links <br>
+6 # owner <br>
+7 # group <br>
 ![Create Link](essential-comman-image/evaluating-permission.png) <br>
 ![Create Link](essential-comman-image/adding-permission.png) <br>
 ![Create Link](essential-comman-image/remove-permission.png) <br>
 ![Create Link](essential-comman-image/exact-permission.png) <br>
 ![Create Link](essential-comman-image/octal-permission.png) <br>
 ![Create Link](essential-comman-image/octal-permission-2.png) <br>
-8 # size
-9 # date and time of last modification
-10 # name
-11 # -> link
-12 # 
+8 # size <br>
+9 # date and time of last modification <br>
+10 # name <br>
+11 # -> link <br>
+12 #  <br>
+
+![Create Link](essential-comman-image/change-directory.png) <br>
+
 
 **File and directory access:**
 
@@ -97,35 +100,55 @@ now to see our working directory, we can type `pwd` command.
 
 
 **Create and Manage Hard Link:**
+To understand *hard links* and *soft links*, first, we must learn some very basic things about *file systems*. Let's imagine a Linux computer is shared by two users, **Aaron** and **Jane**. Aaron logs in with his own username and password, and Jane logs in with her own username and password. This lets them use the same computer, but have different desktops, different program settings and so on. Now Aaron takes a picture of the family dog and saves it into `/home/Aaron/pictures/family_dog.jpg`. <br>
 
-File system like XFS, ext4 and other keep track of data with the help of inodes.
-Inodes are data structures that store metadata about files and directories, such as their permissions, size, and location on the disk.
-When we create a file or directory, the file system allocates an inode to it and stores the file or directory data in blocks on the disk.
-suppose my *dummy.pdf* might have blocks of data scattered all over the disk, but inode remembers where all the blocks are stored.
+Now there's a command in Linux that lets us see some interesting things about files and directories, this is `stat`. Now we'll notice an inode number.
 
 ![Create Link](essential-comman-image/inodes.png) <br>
 
-File Point to the Inode -. Inodes points to the all of the blocks of data we required.
-example: `stat dummy.pdf` 
+File system like XFS, ext4 and other keep track of data with the help of inodes. Our picture might have blocks of data scattered all over the disk, but the inode remembers where all those pieces are stored. It also keeps track of metadata, things like permissions, last modified date, last accessed, and so on. But it would be inconvenient to tell your computer, hey, show me inode `52946177`. So we work with files instead. The one called `family__dog.jpg`. The one called family underscore dog dot jpg. In this case, the file points to the inode, and the inode points to all of the blocks of data that we require. And we finally get to what interests us here.<br><br>
 
-![Create Link](essential-comman-image/links.png) <br>
 
-![Create Link](essential-comman-image/hard-links.png) <br>
+Inodes are data structures that store metadata about files and directories, such as their permissions, size, and location on the disk. When we create a file or directory, the file system allocates an inode to it and stores the file or directory data in blocks on the disk.
+suppose my *dummy.pdf* might have blocks of data scattered all over the disk, but inode remembers where all the blocks are stored.<br><br>
 
-If aaron delelte the image:
+There's already one Link(see the image, **Links-1** ) to our inode.<br><br>
+![Create Link](essential-comman-image/links.png) <br><br>
+Yes there is. When we create a file something like this happens. We tell Linux, hey save this data under the file `family__dog.jpg`. And Linux says okay we'll group all the file's data under inode 52946177. Data blocks and inode created. We'll hard link the file family underscore dog jpg to inode 52946177. <br><br>
 
-![Create Link](essential-comman-image/one-side-hard-link-deletepng) <br>
+Now when we want to read the file we'll say hey Linux, give me the data for `family__dog.jpg` file. And Linux says okay let me see what I know this links to. Here's all the data you requested for inode 52946177. So the number shown as links in the output of the `stat` command is the number of hard links to this inode from files or filenames.<br><br>
+
+**Easy to understand, but why would we need more than one hard link for this data?** <br>
+Well, Jane has her own folder of pictures at `/home/**Jane**/pictures/family_dog.jpg`. How can Aaron share this picture with Jane? Now, the easy answer is to just copy `family__dog.jpg` to slash `/home/**Jane**/pictures/`, family underscore dog jpg, no problem. Right. <br><br>
+
+![Create Link](essential-comman-image/hard-link-1.png) <br><br>
+
+But now imagine we must do this with 5000 pictures. We would have to store 20 GB of data twice. Why use 40 GB of data when you could just use 20 GB? So how can we do that instead of copying `/home/**Aaron**/pictures/family_dog.jpg` to `/home/**Jane**/pictures/family_dog.jpg`? We could hard link it to `/home/**Jane**/pictures/family_dog.jpg`. And the syntax of the command is: <br>
+`$ ln path/to/the/target/file path/to/the/link/file.`<br> 
+The target file is the file that you want to link with. The link file is simply the name of the new hard link that we create. Technically, the hard link created at the destination is a file like any other. The only special thing about it is instead of pointing to a new Inode, it points to the same Inode as the target file. File Point to the Inode -. Inodes points to the all of the blocks of data we required.<br><br>
+
+Now our picture is only stored once, but the same data can be accessed at different locations through different file names. If we run the `stat` command now we can see the links are now two. This is because this inode now has two hard links pointing to it. <br><br>
+![Create Link](essential-comman-image/hard-links.png) <br><br>
+
+Now another beautiful thing about hard links is this Aaron and Jane share the same 5000 pictures through hard links, but maybe Aaron decides to delete his hard link of `/home/Aaron/pictures/family_dog.jpg`. Now what will happen with Jane's picture? Nothing. She'll still have access to that data. Why Because the inode still has one hard link to it. It had two, but now it has one.<br><br>
+
+![Create Link](essential-comman-image/one-side-hard-link-delete.png) <br>
+
+But if Jane also decides to delete her hard link to slash home slash Jane's slash pictures family underscore dog dot jpg The inode will have zero links to it When there are zero links, the data itself will disappear from the file system.
+<br><br>
+
+![Create Link](essential-comman-image/zero-hard-links.png) <br>
 
 Limitations of Hard Links:
-1. Hard links for files, not directories.
-2. Only Hard links within the same file system.
-3. External mounted drive (/mnt/Backups/files) can't be hard linked from (/ssd/home/file)
+1. Hard links for files, not directories. <br>
+2. Only Hard links within the same file system. <br>>
+3. External mounted drive (/mnt/Backups/files) can't be hard linked from (/ssd/home/file) <br>>
 
-Considerations when hard link:
-1. Make sure you have the proper permissions to create the link file at the destination.
-2. Make sure that all users involved have the proper permissions to access the file.
+Considerations when hard link: <br>
+1. Make sure you have the proper permissions to create the link file at the destination. <br>
+2. Make sure that all users involved have the proper permissions to access the file. <br>
 i.e for two user *John* and *Aaron*, this might mean that we need to add both their username to the same group for example family group then we would use a command to let the group family read anf write to this file.
-remember you only need to change permission on of the hard links. That's because you are actually changing permission stored y the INode
+remember you only need to change permission on of the hard links. That's because you are actually changing permission stored y the INode <br>
 
 * `$ useradd -a -G family John` # Add a user to a group <br>
 * `$ useradd -a -G family Aaron` # Add a user to a group <br>
