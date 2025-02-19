@@ -247,7 +247,7 @@ When the sticky bit is set on a directory, it means that only the owner of the f
 
 **Search for File:**
 * / (slash mode): Matches **any** of the specified permissions. <br>
-* - (dash mode): Matches **all** of the specified permissions. <br>
+*  \- (dash mode): Matches **all** of the specified permissions. <br>
 * = (exact mode): Matches **exactly** the specified permissions. <br>
 
 * `find / -perm -o=rw`	# Finds files where **others have both** r **and** w.<br>
@@ -262,63 +262,36 @@ When the sticky bit is set on a directory, it means that only the owner of the f
    ![Search Name](essential-comman-image/search-expression.png) <br>
    ![Search Name](essential-comman-image/search-exp-2.png) <br>
    ![Search Name](essential-comman-image/search-exp-3.png) <br>
-   ![Search Name](essential-comman-image/) <br>
-* `$ find -mmin +5` # Find files modified more than 5 minutes ago <br>
-* `$ find -mmin -5` # Find files modified less than 5 minutes ago <br>
-* `$ find -mmin 5` # Find files modified exactly 5 minutes ago <br>
-* `$ find -cmin +5` # Find files created more than 5 minutes ago <br>
-* `$ find -cmin -5` # Find files created less than 5 minutes ago <br>
-* `$ find -cmin 5` # Find files created exactly 5 minutes ago <br>
-* `$ find -amin +5` # Find files accessed more than 5 minutes ago <br>
-* `$ find -amin -5` # Find files accessed less than 5 minutes ago <br>
-* `$ find -amin 5` # Find files accessed exactly 5 minutes ago <br>
+
+* `$ find -mmin 5` # Find files modified **exactly** 5 minutes ago <br>
+* `$ find -cmin +5` # Find files created **more** than 5 minutes ago <br>
+* `$ find -amin -5` # Find files accessed **less** than 5 minutes ago <br>
 * `$ find / -type f -name file.txt` # Find a file in the filesystem <br>
 * `$ find / -type d -name directory` # Find a directory in the filesystem <br>
 * `$ find / -user user` # Find files owned by a user in the filesystem <br>
 * `$ find / -group group` # Find files owned by a group in the filesystem <br>
 * `$ find / -size +1G` # Find files larger than 1GB in the filesystem <br>
-* `$ find / -size -1G` # Find files smaller than 1GB in the filesystem <br>
-* `$ find / -size 1G` # Find files exactly 1GB in the filesystem <br>
-* `$ find / -mtime +5` # Find files modified more than 5 days ago in the filesystem <br>
-* `$ find / -mtime -5` # Find files modified less than 5 days ago in the filesystem <br>
-* `$ find / -mtime 5` # Find files modified exactly 5 days ago in the filesystem <br>
-* `$ find / -ctime +5` # Find files created more than 5 days ago in the filesystem <br>
-* `$ find / -ctime -5` # Find files created less than 5 days ago in the filesystem <br>
-* `$ find / -ctime 5` # Find files created exactly 5 days ago in the filesystem <br>
-* `$ find / -atime +5` # Find files accessed more than 5 days ago in the filesystem <br>
-* `$ find / -atime -5` # Find files accessed less than 5 days ago in the filesystem <br>
-* `$ find / -atime 5` # Find files accessed exactly 5 days ago in the filesystem <br>
+* `$ find / -mtime +5` # Find files modified **more** than 5 days ago in the filesystem <br>
+* `$ find / -ctime -5` # Find files created **less** than 5 days ago in the filesystem <br>
+* `$ find / -atime -5` # Find files accessed **less** than 5 days ago in the filesystem <br>
 * `$ find / -name file.txt` # Find a file in the filesystem <br>
 * `$ grep pattern file.txt` # Search for a pattern in a file <br>
 * `$ ps` # Display the processes running on the system <br>
 * `$ top` # Display the processes running on the system with a pager <br>
 * `$ kill PID` # Terminate a process by its process ID <br>
 * `$ killall process` # Terminate a process by its name <br>
-* `$ shutdown -h now` # Shutdown the system immediately <br>
 * `$ reboot` # Reboot the system <br>
 * `$ df -h` # Display the disk usage <br>
 * `$ du -h` # Display the disk usage of a directory <br>
 * `$ free -h` # Display the memory usage <br>
 * `$ uname -a` # Display the system information <br>
-* `$ date` # Display the current date and time <br>
-* `$ cal` # Display the calendar <br>
-* `$ history` # Display the command history <br>
-* `$ find / -name file.txt` # Find a file in the filesystem <br>
 * `$ grep pattern file.txt` # Search for a pattern in a file <br>
-* `$ ps` # Display the processes running on the system <br>
 * `$ top` # Display the processes running on the system with a pager <br>
-* `$ find -size [size]` <br>
-* `$ find -size 512k]` # Find files exactly 512KB [k for kilobytes, M for megabytes, G for gigabytes] <br>
-* `$ find -size +512k]` # Find files larger than 512KB <br>
-* `$ find -size -512k]` # Find files smaller than 512KB\ <br>
 * `$ find -name "f*" -size 512k`       #AND Operator <br>
 * `$ find -name -o "f*" -size 512k`       #OR Operator <br>
 * `$ find -not -name -o "f*"` # NOT Operator <br>
 * `$ find \! -name -o "f*"` # alternate NOT Operator, here \ meaning to tell bash to ignore the special meaning of this characted and just consider it a regular character
 * `$ find -perm 664` # find files with **exactly** 664 permission <br>
-* `$ find -perm -664` # find files with **at least** 664 permission <br>
-* `$ find -perm /664` # find files with **any of these** permission <br>
-* `$ find -perm 600` # find owner can read and write with no other permission <br>
 * `$ find -perm -100` # Find files that the owner can execute **at least** but the rest of the permission can be anything <br>
 * `$ find \! -perm -o=r` # Nobody else can read these files except the user and group that own them  <br>
 * `$ find -perm /u=r,g=r,o=r` # Find files that can only be read either by the user, the group, or others, It doesn't matter who it is, but at least  one of them should be able to read it.
@@ -336,8 +309,8 @@ When the sticky bit is set on a directory, it means that only the owner of the f
 
 * `$ cat /linux_learn/country.txt` <br>
 * `$ tac /linux_learn/country.txt` <br>
-* `$ tail -n 20 /var/log/dnf.log` <br>
-* `$ head -n 20 /var/log/dnf.log` <br>
+* `$ tail -n 20 /var/log/dnf.log` <br> # Display the last 20 lines of a file <br>
+* `$ head -n 20 /var/log/dnf.log` <br> # Display the first 20 lines of a file <br>
 * `$ sort /linux_learn/country.txt` <br>
 * `$ sort -r /linux_learn/country.txt` # reverse order <br>
 * `$ sort -n /linux_learn/country.txt` # numeric order <br>
@@ -349,41 +322,73 @@ When the sticky bit is set on a directory, it means that only the owner of the f
 * `$ sort -t : -k 2 /linux_learn/country.txt` # sort by second column with delimiter : <br>
 * `$ sort -t : -k 2 -r /linux_learn/country.txt` # sort by second column in reverse order with delimiter : <br>
 
+**SED: Stream Editor:**
+* `$ sed 's/old/new/' file.txt` # Replace the first occurrence of a string in a file <br>
+* `$ sed 's/old/new/g' file.txt` # Replace all occurrences of a string in a file <br>
+* `$ sed 's/old/new/2' file.txt` # Replace the second occurrence of a string in a file <br>
+* `$ sed 's/old/new/3g' file.txt` # Replace all occurrences starting from the third in a file <br>
+* `$ sed 's/old/new/i' file.txt` # Replace the first occurrence of a string case-insensitive in a file <br>
+* `$ sed 's/old/new/gi' file.txt` # Replace all occurrences of a string case-insensitive in a file <br>
+* `$ sed 's/old/new/2i' file.txt` # Replace the second occurrence of a string case-insensitive in a file <br>
+* `$ sed 's/old/new/3gi' file.txt` # Replace all occurrences starting from the third case-insensitive in a file <br>
+
 ![Search Name](essential-comman-image/sed.png) <br>
+`sed` just showed what can do, but not edit the file. but if I want to edit the file, then I need to add -i (--in-place)
+with the command. <br>
 ![Search Name](essential-comman-image/sed-2.png) <br>
+
+**CUT Command:** <br>
+`cut` command is used to extract part/sections from each line of file. By default, it treats each line of a file as a separate record and each field as a separate column. <br>
+* `$ cut -c 1-5 file.txt` # Extract the first five characters of each line <br>
+* `$ cut -d ' ' -f 1 file.txt` # Extract the first field of each line with a space delimiter <br>
+* `$ cut -d ':' -f 1 file.txt` # Extract the first field of each line with a colon delimiter <br>
+* `$ cut -d ',' -f 1 file.txt` # Extract the first field of each line with a colon delimiter <br>
+
+unq: Display unique lines of files. <br>
+* `$ uniq file.txt` # Display unique lines of a file <br>
+uniq command has a limitation that it only removes adjacent duplicate lines. <br>
+to solve this problem, we can use `sort` command before `uniq` command. <br>
+
+![Search Name](essential-comman-image/uniq-and-sort.png) <br>
+
 ![Search Name](essential-comman-image/cut.png) <br>
 
+Pager: A pager is a program that allows you to view the contents of a file one page at a time. <br>
+Hold Shit + Press N -> To s
 
 **Search File:**
 * `$ grep -i 'pattern' /etc/os-release` # case insensitive search <br>
 * `$ grep -r 'pattern' /etc/` # recursive search <br>
 ![Search Name](essential-comman-image/recursive-grep-search.png) <br>
 * `$ grep -w 'pattern' /etc/os-release` # whole word search <br>
-* `$ grep –vi 'centos' /etc/os-release` # invert match <br>
+* `$ grep -wi 'password' /etc/ssh/sshd_config` # book and booking is not same word
+* `$ grep –vi 'centos' /etc/os-release` # **invert** match <br>
 ![Search Name](essential-comman-image/word-grep-search.png) <br>
 ![Search Name](essential-comman-image/only-matching.png) <br>
 
 
-Regex Operators:
-^ # Start of the line
-$ # End of the line
-. # Any character
-* # Zero or more occurrences
-+ # One or more occurrences
-{} # Range of occurrences
-[] # Character class
-() # Grouping
-? # Zero or one occurrence
-| # Alternation
-[^] # Negation
+**Regex Operators:**
+* ^ --> Start of the line
+* $ --> End of the line
+* . --> Match any ONE character (period)
+* \* --> Match the previous element Zero or more times
+* \+ --> One or more occurrences
+* {} --> Previous Element can exist "this many" times. Range of occurrences.
+* [] --> Character class
+* () --> Grouping
+* ? --> Make the previous element optional. Zero or one occurrence
+* | --> Alternation (vertical pipe)
+* [^] --> Negation
 
-`$ grep '^#' /etc/login.defs` # Means that we are looking for lines that start with a hash symbol.
-`$ grep –v '^#' /etc/login.defs` # Means that we are looking for lines that do not start with a hash symbol.
-`$ grep '^PASS' /etc/login.defs` # Means that we are looking for lines that start with the word PASS.
+* `$ grep '^#' /etc/login.defs` # Means that we are looking for lines that start with a hash symbol. <br>
+* `$ grep –v '^#' /etc/login.defs` # Means that we are looking for lines that do not start with a hash symbol. <br>
+* `$ grep '^PASS' /etc/login.defs` # Means that we are looking for lines that start with the word PASS. <br>
 ![Search Name](essential-comman-image/dollar-regex.png) <br>
 ![Search Name](essential-comman-image/match-any.png) <br>
-`$ grep '.' /etc/login.defs` # 
-`$ grep '\.' /etc/login.defs`
+* `$ grep '.' /etc/login.defs` #  <br>
+* `$ grep '\.' /etc/login.defs` <br>
+* `$ grep 'let*' /etc/` # let, lett, lettt <br>
+* `$ grep '/.*/' /etc/` # Begins with /; has 0 or more characters between; ends with a / <br>
 ![Search Name](essential-comman-image/start-match.png) <br>
 ![Search Name](essential-comman-image/word-grep-search.png) <br>
 
