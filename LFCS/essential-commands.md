@@ -208,7 +208,7 @@ SGID is a similar permission, but it applies to both **executables** and **direc
 Sticky Bit is a special persmission that can be set on **directories**, It restricts file deletion in that directory. 
 SUID - Set User ID <br>
 SGID - Set Group ID <br>
-**SUID** - when this is set on a file, it means that whenever the file is executed, it going to be executed as the User IDof the owner of the file Instead of the User ID of the person who is running the file.<br>
+**SUID** - when this is set on a file, it means that whenever the file is executed, it going to be executed as the User ID of the owner of the file Instead of the User ID of the person who is running the file.<br>
 Capital **S** in the permission means that the file has the SUID permission but it is not executable. <br>
 Small **s** in the permission means that the file has the SUID permission and it is executable. <br>
 `$ chmod 4664 testsuidfile` <br>
@@ -216,8 +216,8 @@ Small **s** in the permission means that the file has the SUID permission and it
 ![Create Link](essential-comman-image/suid.png) <br>
 
 `$ touch testsuidfile` <br>
-`$ chmod 2664 testsuidfile` <br>
-`$ chmod 4664 testsuidfile` <br>
+`$ chmod 2664 testsuidfile` <br> 
+`$ chmod 4664 testsuidfile` <br> #  
 `$ chmod 4764 testsuidfile` <br>
 
 
@@ -243,6 +243,9 @@ When the sticky bit is set on a directory, it means that only the owner of the f
 * `$ chmod 1777 stickydir/`  <br>
 * `$ chmod 1666 stickydir/` <br>
 * `$ chmod 1775 teststickyfile` <br>
+
+![Create Link](essential-comman-image/SUID.png) <br>
+![Create Link](essential-comman-image/suid-ans.png) <br>
 
 
 **Search for File:**
@@ -337,6 +340,9 @@ When the sticky bit is set on a directory, it means that only the owner of the f
 with the command. <br>
 ![Search Name](essential-comman-image/sed-2.png) <br>
 
+![Search Name](essential-comman-image/serch-perm.png) <br>
+![Search Name](essential-comman-image/search-perm-ans.png) <br>
+
 **CUT Command:** <br>
 `cut` command is used to extract part/sections from each line of file. By default, it treats each line of a file as a separate record and each field as a separate column. <br>
 * `$ cut -c 1-5 file.txt` # Extract the first five characters of each line <br>
@@ -423,3 +429,7 @@ Hold Shit + Press N -> To s
 ![Search Name](essential-comman-image/compressed-1.png) <br>
 ![Search Name](essential-comman-image/compressed-2.png) <br>
 ![Search Name](essential-comman-image/compressed-3.png) <br>
+
+**Lab Task:** <br>
+![Search Name](essential-comman-image/hardlink.png) <br>
+![Search Name](essential-comman-image/soft-link.png) <br>
