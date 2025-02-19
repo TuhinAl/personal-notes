@@ -374,10 +374,10 @@ Hold Shit + Press N -> To s
 * \* --> Match the previous element Zero or more times
 * \+ --> One or more occurrences
 * {} --> Previous Element can exist "this many" times. Range of occurrences.
-* [] --> Character class
+* [] --> Character class, Ranges Or Sets
 * () --> Grouping
 * ? --> Make the previous element optional. Zero or one occurrence
-* | --> Alternation (vertical pipe)
+* | --> Alternation (vertical pipe), Match One Thing Or The Other
 * [^] --> Negation
 
 * `$ grep '^#' /etc/login.defs` # Means that we are looking for lines that start with a hash symbol. <br>
@@ -390,8 +390,36 @@ Hold Shit + Press N -> To s
 * `$ grep 'let*' /etc/` # let, lett, lettt <br>
 * `$ grep '/.*/' /etc/` # Begins with /; has 0 or more characters between; ends with a / <br>
 ![Search Name](essential-comman-image/start-match.png) <br>
+![Search Name](essential-comman-image/star-match.png) <br>
+![Search Name](essential-comman-image/plus-match.png) <br>
 ![Search Name](essential-comman-image/word-grep-search.png) <br>
 
 **Extended Regular Expression:**
 * `$ grep -E 'pattern' /etc/os-release` # extended regular expression <br>
 ![Search Name](essential-comman-image/extend-grep.png) <br>
+![Search Name](essential-comman-image/prev-elem.png) <br>
+* `$ egrep -r '0{min,max}' /etc/` # min and max are the minimum and maximum number of occurrences. <br>
+* `$ egrep -r '0{2,4}' /etc/` # 0{2,4} means that we are looking for two to four zeros in a row. <br>
+* `$ egrep -r '0{2,}' /etc/` # 0{2,} means that we are looking for two or more zeros in a row. <br>
+* `$ egrep -r '0{,4}' /etc/` # 0{,4} means that we are looking for up to four zeros in a row. <br>
+* `$ egrep -r '0{2}' /etc/` # 0{2} means that we are looking for exactly two zeros in a row. <br>
+* `$ egrep -r 'disabled?' /etc/` #Make The Previous Element Optional <br>
+* `$ egrep -r 'enabled|disabled' /etc/` # Alternation (vertical pipe), Match One Thing Or The Other <br>
+* `$ egrep -r 'c[au]t' /etc/` # search the value of cat and cut <br>
+* `$ egrep –r 'http[^s]' /etc/` # This command used for search the value of http but not https <br>
+
+
+![Search Name](essential-comman-image/subexression.png) <br>
+[RegEx](https://regexr.com)
+
+**Packing Files and Directories With tar:** <br>
+
+![Search Name](essential-comman-image/packing-file.png) <br>
+
+![Search Name](essential-comman-image/packing-file-2.png) <br>
+
+**Compression And Decompression With tar:** <br>
+
+![Search Name](essential-comman-image/compressed-1.png) <br>
+![Search Name](essential-comman-image/compressed-2.png) <br>
+![Search Name](essential-comman-image/compressed-3.png) <br>
