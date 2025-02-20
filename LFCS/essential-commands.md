@@ -484,3 +484,57 @@ disabled means it wont automatically start up, but it can be manually started by
 ![Systemd](od/startup-process-3.png) <br>
 
 [Real Life Use of Systemd](od/systemd-lab.md)
+
+
+## Diagnose and Manage Processes
+Whenever we launch a program, It lives as a so-called process, on the opreting system. <br>
+
+* `$ ps aux`  # Display all processes <br> a=all. u = user oriented format, x = extemnded format <br>
+* `$ ps -e` # Display all processes <br>
+* `ps u -U Tuhin`  # If we want to see the processes that have been started by the user Tuhin, u for user oriented format, U for user <br>
+* `pgrep -a syslog` # Search for processes related to "syslog", Now sometimes we will want to explore processes that have a specific name to search for any process that contains the word syslog in its name. For instance, we can use `pgrep` or process grep. <br>
+
+Now in Linux, there's this concept of process niceness. Niceness is a way to tell the Linux kernel how nice a process is to other processes. <br>
+
+The niceness value can be a number between -20 and 19. The lower the number, the less nice it is. In other words, a lower number means a higher priority.<br>
+
+Story: Consider `process-A` with a nice value of -20 and `process-B` with a nice value of 19. If both of these are running at the same time, we need to use all CPU resources available. Process-A will leave very little available for process-B. A might use up CPU 95 to 99% of the time, while B will get very little CPU time, only when there's something left to spare. <br>
+
+We'll want important processes to have higher priority, which means we will assign them lower nice values. <br> There are two ways this can be done. <br>
+1. At launch time : nice -n [NICE_VALUE] [COMMAND] <br>
+`$ nice -n 11 bash` <br> check by `$ ps l` or  `$ ps lax` <br> by NI column.
+2. After launch time : renice -n [NICE_VALUE] -p [PID] <br>
+
+Our `nice n 11 bash` command started a new bash shell And we can see that the `ps lax` command inherited the nice value of our bash shell. That's because all processes inherit the niceness of their parent process, the one that launched them. <br>
+![Systemd](od/ps-lax.png) <br>
+
+To see which processes are parents for other processes, we can add the f option, which stands for force display because it shows us tree like branches for this child parent relationship.<br>
+* `$ ps fax` # Display all processes in a tree-like format <br>
+* `$ pstree` # Display all processes in a tree-like format <br>
+* `$ pstree -p` # Display all processes in a tree-like format with PIDs <br>
+* `$ pstree -p | grep sshd` # Display all processes in a tree-like format with PIDs and filter the output with grep <br>
+
+<br><br>
+If we also want to see CPU usage, memory usage, and the columns we're used to, we can throw the U option in here. The order of the f, u x letters is not important.
+
+* `$ ps faxu` # Display all processes in a tree-like format with user-oriented format <br>
+
+Now regular user can only assign nice values between *0 and 19*, To assign lower values for higher priority. We need to use root privileges.<br>
+* `$ sudo nice -n -12 bash` # Start a new bash shell with a nice value of -12 <br>
+
+Now the problem with the command `sudo nice dash -n -12 bash` is that it also started our bash shell as the root user.<br>
+![Systemd](od/bash-root.png) <br>
+
+* Regular users cannot lower the nice value of a process that it currently has, only root can lower process niceness. <br>
+
+* Linux has this concept of sending processes, so-called signals. These are like high priority messages that tell the process, hey, stop what you're doing. We have the special request for you, but an application can only act on a specific signal if it was programmed to respond to that signal. The only exceptions are signals like **SIGSTOP** and **SIGKILL**. These cannot be ignored by the process. <br>
+
+Now backgrounding and foregrounding processes pausing and exiting. some commands can take a long time to finish their job.
+* Ctrl + Z for program pause vim/vi editor. it does not make any progress with its work. It's entirely frozen.
+* again type fg to return to the editor. <br>
+
+![Systemd](od/bg-fg.png) <br>
+
+Sometimes we'll want to see what files or directories a process is currently using. First let's find the PID of our bash shell using `pgrep -a bash`. Our PID in this case is 13536. And if you're following along, of course it'll be different. Now to see what files or directories our bash process with PID 13536 is using. <br>
+
+* `$ lsof -p 13536` # List all files and directories a process is using <br>
