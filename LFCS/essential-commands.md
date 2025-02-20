@@ -433,3 +433,52 @@ Hold Shit + Press N -> To s
 **Lab Task:** <br>
 ![Search Name](essential-comman-image/hardlink.png) <br>
 ![Search Name](essential-comman-image/soft-link.png) <br>
+
+
+
+# Section - 2: Operations Deployment
+
+## Boot, Reboot and Shutdown a system safely:
+To reboot or shutdown a linux machine, will often use the `systemctl` command.
+* `$ systemctl reboot` # Reboot the system <br>
+* `$ systemctl poweroff` # Shutdown the system <br>
+
+### Mange Startup process and Service:
+
+**systemd unit:** A unit is a configuration file that describes how a service, socket, device, mount point, or other resource should be managed by systemd. <br>
+systemd is the the collection of tool, components and application that help to start, operate, manage most of the Linux based OS. <br>
+
+![Systemd](od/systemd-units.png) <br>
+
+Long story short, systemd is a system and service manager for Linux operating systems. It is designed to be backwards compatible with SysV init scripts, and provides a number of features such as parallel startup of system services at boot time, on-demand activation of daemons, support for system state snapshots, or dependency-based service control logic. <br>
+systemd is the name of a large collection of tools and components but aalso the name of the application  that is reponsible for system initialization and monitoring the system as a whole to ensure smooth operation. <br>
+
+**service unit:** A service unit is a type of systemd unit that controls a service. service unit have clear instructions about such things as what command to issue to start the service,  stop the service, restart the service and what to do if a program crashes so on<br>
+**socket unit:** A socket unit is a type of systemd unit that controls a socket. <br>
+**device unit:** A device unit is a type of systemd unit that controls a device. <br>
+**mount unit:** A mount unit is a type of systemd unit that controls a mount point. <br>
+**target unit:** A target unit is a type of systemd unit that groups other units together. <br>
+**snapshot unit:** A snapshot unit is a type of systemd unit that represents a saved state of the system. <br>
+**timer unit:** A timer unit is a type of systemd unit that controls a timer. <br>
+
+![Systemd](od/startup-process-1.png) <br>
+![Systemd](od/ssh-service.png) <br>
+so, systemd service is the responsible for the lifecycle of the ssh daemon.<br>
+![Systemd](od/startup-process-2.png) <br>
+Here, we can see, If this service is enabled, that means the systemd will automatically start the ssh daemon when the system boots up. <br> 
+disabled means it wont automatically start up, but it can be manually started by the administrator. <br>
+
+`$ sudo systemctl stop sshd.service` # Stop the sshd service <br>
+`$ sudo systemctl start sshd.service` # Start the sshd service <br>
+`$ sudo systemctl restart sshd.service` # Restart the sshd service <br>
+`$ sudo systemctl reload sshd.service` # Reload the sshd service <br>
+`$ sudo systemctl reload-or-restart sshd.service` # Reload or restart the sshd service<>
+`$ sudo systemctl disable sshd.service` # Disable the sshd service <br>
+`$ sudo systemctl status sshd.service` # Display the status of the sshd service <br>
+`$ sudo systemctl is-enabled sshd.service` # Check if the sshd service is enabled <br>
+`$ sudo systemctl enable sshd.service` # Enable the sshd service <br>
+`$ sudo systemctl is-active sshd.service` # Check if the sshd service is active <br>
+`$ sudo systemctl list-units --type=service` # List all services <br>
+`$ sudo systemctl enable --now sshd.service` # 
+`$ sudo systemctl disable --now sshd.service` # 
+![Systemd](od/startup-process-3.png) <br>
