@@ -482,3 +482,5 @@ disabled means it wont automatically start up, but it can be manually started by
 `$ sudo systemctl enable --now sshd.service` # 
 `$ sudo systemctl disable --now sshd.service` # 
 ![Systemd](od/startup-process-3.png) <br>
+
+[Real Life Use of Systemd](od/systemd-lab.md)
