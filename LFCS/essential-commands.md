@@ -418,6 +418,21 @@ Hold Shit + Press N -> To s
 ![Search Name](essential-comman-image/subexression.png) <br>
 [RegEx](https://regexr.com)
 
+## Reges Cheat Sheet:
+![RegEx](essential-comman-image/grep/1.png)<br>
+![RegEx](essential-comman-image/grep/2.png)<br>
+![RegEx](essential-comman-image/grep/3.png)<br>
+![RegEx](essential-comman-image/grep/4.png)<br>
+![RegEx](essential-comman-image/grep/5.png)<br>
+![RegEx](essential-comman-image/grep/6.png)<br>
+![RegEx](essential-comman-image/grep/7.png)<br>
+![RegEx](essential-comman-image/grep/8.png)<br>
+![RegEx](essential-comman-image/grep/9.png)<br>
+![RegEx](essential-comman-image/grep/10.png)<br>
+![RegEx](essential-comman-image/grep/11.png)<br>
+![RegEx](essential-comman-image/grep/12.png)<br>
+<br><br>
+
 **Packing Files and Directories With tar:** <br>
 
 ![Search Name](essential-comman-image/packing-file.png) <br>
