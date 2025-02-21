@@ -538,3 +538,46 @@ Now backgrounding and foregrounding processes pausing and exiting. some commands
 Sometimes we'll want to see what files or directories a process is currently using. First let's find the PID of our bash shell using `pgrep -a bash`. Our PID in this case is 13536. And if you're following along, of course it'll be different. Now to see what files or directories our bash process with PID 13536 is using. <br>
 
 * `$ lsof -p 13536` # List all files and directories a process is using <br>
+
+
+## Locate and Analyze System Log Files
+
+Linux operating systems are largely server oriented, and on a server you always want to know what happened, who did what, what worked, what didn't work, what errors were encountered, who accessed the system, and so on. Everything important that happens on a Linux system is saved as a text message somewhere, which are called logs. <br>
+
+The Linux kernel and most programs that run on the Linux operating system generate status messages. Error messages, warnings, and so on. There can be tens of different programs generating these messages all the time, so we need a way to collect all of these and organize them nicely into files. And this is the job of **Logging daemons**. This are simply applications that collect, organize and store logs. The most popular one on Linux is  **rsyslog**, and its name comes from Rocket-Fast System for log processing. **ryslog** stores all logs in the `/var/log/` directory.<br>c
+![Systemd](od/logging-daemon.png) <br>
+
+Since these are usually regular text files, you can search through them with grep commands or any of the other text oriented utilities that we've learned about. One **important** thing though most of these files cannot be read by regular users.
+
+* `$ which sudo` # Find the location of a command <br>
+* `$ journalctl /bin/sudo` # View the syslog file <br>
+
+![Systemd](od/journalctl-summary.png) <br>
+
+
+## Schedule task to Run at a Set Date and Time:
+
+The **cron** utility is well suited for repetitive jobs that execute once every few minutes or hours, or on specific days or specific times. **Anacron** is also used to create repetitive jobs, but with a few differences. One is that it cannot repeat those jobs every few minutes or hours. The smallest unit it can work with is a day, so it can run a job every day, or every three days, or every week, or even every month or year. But it cannot run a job multiple times per day, just once per day. This utility has been created because cron can miss jobs if the computer is not powered on all the time. For example, if a job is set to run daily at noon and the computer is powered on at 12:01, that job won't run for that day. Anacron, on the other hand, will check if that job for today ever got a chance to run. If it didn't, it will execute it no matter when the system was powered on.
+
+
+
+## Manage Software With Package Manager
+
+* `$ dpkg -l` # Display all installed packages <br>
+* `$ dpkg -l | grep apache` # Display all installed packages and filter the output with grep <br>
+* `$ dpks --listfiles nginx` # Display the files in the nginx <br>
+* `$ dpkg --search /usr/sbin/nginx` # Search for a file in the package database <br>
+* `$ apt show libnginx-mod-stream` # If we curious about the purpose of a certain package <br>
+* `$ apt search --names-only apache` # to lookup all the packages that mention the word apache <br>
+* `$ apt search apache module image` # the search function must match all of these words <br>
+* `$ sudo apt remove nginx` # remove the package, but the dependencies are sometimees still left  <br>
+* `$ sudo apt autoremove nginx` # remove the package and the dependencies that are no longer needed <br>
+
+## Configure the repositories of Package manager:
+
+
+## Install Software by Compiling Source Code:
+
+
+
+
