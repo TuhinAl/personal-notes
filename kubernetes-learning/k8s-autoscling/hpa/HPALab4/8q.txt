@@ -1,0 +1,25 @@
+Testing Flask Application Autoscaling
+
+Let's see if the Flask application scales in response to the traffic.
+
+1) Increase Traffic:
+
+Open a new terminal and run the following command to create a pod that will generate traffic to the Flask application:
+
+```kubectl run curl-pod --image=alpine -- /bin/sh -c "apk add --no-cache curl && sleep 3600"```
+
+```kubectl exec -it curl-pod -- /bin/sh```
+
+Execute the below command inside the curl-pod.
+
+```timeout 20s sh -c 'while true; do curl -s http://flask-prometheus-app-service > /dev/null; done'```
+
+2) Monitor Traffic:
+
+To monitor the traffic received by the application, run the following command:
+
+```kubectl get --raw "/apis/custom.metrics.k8s.io/v1beta1/namespaces/default/pods/*/http_requests_per_second?labelSelector=app=flask-prometheus-app" | jq .```
+
+3) Verify Autoscaling:
+
+To verify if the autoscaling is working, check the events of the Horizontal Pod Autoscaler (HPA).

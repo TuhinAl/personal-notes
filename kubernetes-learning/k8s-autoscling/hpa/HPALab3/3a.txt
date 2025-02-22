@@ -1,0 +1,12 @@
+To retrieve metrics from the flask-prometheus-app service, run a temporary curlpod pod using the lightweight alpine:latest image. This pod installs curl and then fetches the metrics from the /metrics endpoint. Finally, view the output by checking the pod's logs.
+
+```
+kubectl run curlpod --image=alpine:latest --restart=Never -- sh -c "apk add --no-cache curl && curl -s http://flask-prometheus-app-service/metrics"
+```
+Check the logs for the metrics:
+
+```
+kubectl logs curlpod -f
+```
+
+In this lab I got fail bcz I don't find the issues in my answer.

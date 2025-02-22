@@ -1,0 +1,20 @@
+Install the Prometheus Community Helm Chart in the prometheus namespace.
+
+    1. Add the Prometheus Community Helm Repository
+```
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+```
+
+    2. Update the Helm Repositories
+```
+helm repo update
+```
+
+    3. Install Prometheus Using the Helm Chart
+```
+helm install prometheus prometheus-community/prometheus --namespace prometheus --create-namespace --version 26.1.0
+```
+
+
+
+

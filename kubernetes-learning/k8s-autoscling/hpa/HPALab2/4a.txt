@@ -1,0 +1,6 @@
+Run the imperative command to create autoscale:
+
+```kubectl autoscale deployment nginx-deployment --max=3 --cpu-percent=80```
+Or use the /root/autoscale.yml manifest file to create autoscale.
+
+```kubectl apply -f /root/autoscale.yml```

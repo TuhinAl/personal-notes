@@ -1,0 +1,39 @@
+To configure Prometheus to scrape metrics from the flask-prometheus-app application, please follow the steps outlined below:
+
+        1.To add a new scrape job to Prometheus, first edit the Prometheus ConfigMap:
+
+```kubectl edit configmap prometheus-server -n prometheus```
+
+        2. In the ConfigMap editor, locate the scrape_configs section and add a new scrape configuration to scrape metrics from your application.
+
+```
+apiVersion: v1
+data:
+  alerting_rules.yml: |
+    {}
+  alerts: |
+    {}
+  allow-snippet-annotations: "false"
+  prometheus.yml: |
+    global:
+      evaluation_interval: 1m
+      scrape_interval: 1m
+      scrape_timeout: 10s
+    rule_files:
+    - /etc/config/recording_rules.yml
+    - /etc/config/alerting_rules.yml
+    - /etc/config/rules
+    - /etc/config/alerts
+    scrape_configs:
+    - job_name: 'custom-metrics'                  #added
+      static_configs:                             #added
+      - targets: ['flask-prometheus-app-service.default.svc.cluster.local'] #added
+    - job_name: prometheus
+      static_configs:
+      - targets:
+        - localhost:9090
+    - bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+      job_name: kubernetes-apiservers
+      kubernetes_sd_configs:
+```
+        3. After adding the new scrape configuration, save the changes and exit the editor.
