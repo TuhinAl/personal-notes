@@ -690,9 +690,119 @@ The **cron** utility is well suited for repetitive jobs that execute once every 
 
 ## Configure the repositories of Package manager:
 
+**main:** This components contains packages that are free and opensources and are officially supported by ubuntu.
+**restricted:** free and opensource but may have restrictions on their use or redistribution. 
+**universe:** free and opensources but not officially supported by ubuntu.
+**multiverse:** not free and opensources and may have other licencing restrictions.
+
+we basically need `main` and `universe`.
 
 ## Install Software by Compiling Source Code:
 
+## Create and Enfoforce MAC using SELinux
+* sudo systemctl statuse apparmor
+    5  sudo systemctl status apparmor
+    6  sudo systemctl stop apparmor
+    7  sudo systemctl status apparmor
+    8  clear
+    9  sudo apt install selinux-basics auditd
+   10  sudo apt update
+   11  sudo apt upgrade
+   12  sudo apt install selinux-basics auditd
+   13  sestatus
+   14  ls -Z /
+   15  sudo selinux-activate
+   16  sestatus
+   17  cat /etc/default/grub
+   18  ls -a /
+   19  sudo reboot
+   20  client_loop: send disconnect: Broken pipe
+   21  clear
+   22  ls -Z /
+   23  ll
+   24  sestatus
+   25  getinforce
+   26  get inforce
+   27  getenforce
+
+SELinux is enables 2way: Enforcing and Permissive way
+
+Enforcing: SELinux is enabled and actively enforcing the security policy. <br>
+Permissive: SELinux is enabled but not enforcing the security policy. Its observing actions of our system passively <br>
 
 
+# Networking
+**Lecture: Configure IPv4 and IPv6 Networking and Hostname Resolution - Demo**
 
+* `$ ip addr` # Display the IP address <br>
+* `$ ip link` #Display the network interface in the device  <br>
+* `$ sudo ip link set dev enp1s0 up` # Enable the network interface **enp1s0**<br>
+* `$ sudo ip link set dev enp1s0 down` # Disable the network interface **enp1s0**<br>
+* `$ sudo ip addr add 10.0.0.40/24 dev enp1s0` # Assign an IP address to the network interface **enp1s8**<br>
+Note that: A Network Interface can have multiple IP addresses. <br> To remove IP address from a network interface, we can use the `del` option. <br>
+* `$ sudo ip addr del IP_ADDRESS/CIDR dev NETWORK_INTERFACE` # Remove an IP address from a network interface <br>
+
+These are temporary configurations. How do we make it permanent? <br> It depends on the Operating System. <br>
+Default network tools have been changed a lot in the past. <br>
+Ubuntu currently uses the `netplan` tool to configure network interfaces. <br> This is a set of utilities that reads some configuration files then sends instructions to other networking tools telling them to configure network setting accordingly.<br> 
+On the Ubuntu Server Edition, NetPlan send instructions to `systemd-networkd` daemon called Systemd-Network to configure network settings. <br>
+
+So kets see how we can instruct NetPlan to assign some IPs for our devices.<br>
+To see the current NetPlan Configuration file, we can type `sudo netplan get`.
+
+* `$ sudo netplan get` # Display the current NetPlan configuration <br>
+* `$ sudo cat /etc/netplan/50-cloud-init.yaml` # read the NetPlan configuration file <br>
+* `$ sudo nano /etc/network/interfaces` # Edit the network configuration file <br>
+we'll copy this text and use it as a template in our new file. Now, let's remember the name of the device that we want to configure. And let's create a new Netplan YAML file.
+
+```99-my-settings.yaml
+network:
+  version: 2
+  ethernets:
+    enX0:
+      match:
+        macaddress: "02:10:03:ea:38:83"
+      dhcp4: true
+      dhcp6: false
+      set-name: "enX0"
+```
+
+Its standard practice to prefix the file with a number. This is because the files are read in order. <br>
+netplant will process yaml files in this directory in alphabetical order. <br>
+* `$ sudo netplan apply` # Apply the NetPlan configuration <br>
+* `$ sudo netplan --debug apply` # Apply the NetPlan configuration in debug mode <br>
+* `$ sudo netplan try` # Try the NetPlan configuration <br>\
+* `$ sudo netplan try --timeout=10` # Try the NetPlan configuration with a timeout <br>
+* `$ sudo ip route` # Display the routing table <br>
+
+`sudo vim /etc/netplan/99-mysettings.yaml `<br>
+```/etc/netplan/99-mysettings.yaml
+network:
+  version: 2
+  ethernets:
+    enp0s8:
+      dhcp4: false
+      dhcp6: false
+      addresses:
+        - 10.0.0.9/24
+      nameservers:
+        addresses:
+          - 8.8.4.4
+          - 8.8.8.8
+        routes:
+          - to: 192.168.0.0./24
+            via: 10.0.0.0.100
+          - to: default
+            via: 10.0.0.1
+```
+
+then apply our setting by:  `$ sudo netplan try`
+
+* `$ resolvectl dns` # Display the DNS configuration <br>
+
+#### Important
+`$ man netplan `
+**to read further /usr/share/doc/netplan/examples/ <br>**
+
+### Start, Stop and Check the status of Network Services:
+Slide:
