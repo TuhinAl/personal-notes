@@ -805,4 +805,127 @@ then apply our setting by:  `$ sudo netplan try`
 **to read further /usr/share/doc/netplan/examples/ <br>**
 
 ### Start, Stop and Check the status of Network Services:
-Slide:
+Check Slide:
+
+### Bridge and Bond Devices Configuration.
+Check SLide:
+## Configure Bridge and Bonding Devices.
+### Configure Bridge Devices:
+1. First, check the `bridge.yml` file in `ls /usr/share/doc/netplan/examples/`
+2. From this exmaples folder, we can copy the `bridge.yml` file to `/etc/netplan/` folder.
+      * `sudo cp bridge.yaml /etc/netplan/99-bridge.yaml`
+      * change the permission of the file by `sudo chmod 600 /etc/netplan/99-bridge.yaml`
+3. Edit the file by `sudo vim /etc/netplan/99-bridge.yaml` and add the following content:
+
+```
+99-bridge.yaml
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    enp3s0:
+      dhcp4: no
+  bridges:
+    br0:
+      dhcp4: yes
+      interfaces:
+        - enp3s0 # This is the interface-1 that will be bridged
+        - enp4s0 # This is the interface-2 that will be bridged
+  ```
+
+then apply our setting by:  `$ sudo netplan try`
+
+If we want to delete the Bridge configuration, then we can delete the file from the `/etc/netplan/` folder and then apply the setting by `sudo netplan try`
+then delete the bridge interface: `sudo ip link delete br0`
+
+### Configure Bonding Devices:
+1. First, check the `bonding.yaml` file in `ls /usr/share/doc/netplan/examples/`
+2. From this exmaples folder, we can copy the `bonding.yaml` file to `/etc/netplan/` folder.
+      * `sudo cp bonding.yaml /etc/netplan/99-bonding.yaml`
+      * change the permission of the file by `sudo chmod 600 /etc/netplan/99-bonding.yaml`
+See the additional details of bond: `cat /proc/net/bonding/bond0`
+
+### Configure a Packet Filtering (Firewall) in a Ubuntu Machine:
+**Uncomplicated Firewall (ufw)**
+
+Before we continue, we must make sure to add at least one rule that allow SSH traffic. Otherwise, when we enable UFW, we ownt be able to login through SSH anymore. <br>
+This happens because UFW blocks all incoming traffic by default. this is called whitelist approach. <br>
+* `$ sudo ufw status` # Display the status of the firewall <br>
+
+lets create our first rule. To enable incoming network packets on port 22 (SSH) <br>
+* `$ sudo ufw allow 22` # Allow incoming network packets on port 22 <br>
+This will allow connection on both TCP and UDP. SSH uses TCP <br>
+
+Now we can enable UFW by typing 
+* `$ sudo ufw enable` <br>
+* `$ sudo ufw status verbose` <br>
+* `$ sudo ufw allow 53/tcp` <br> # Allow incoming network packets on tcp port 53 <br>
+
+check Local Address and Peer address port
+`$ ss -tn ` # 
+we can create rule to only allow incoming traffic to port 22
+
+* `$ sudo ufw allow from 10.0.0.192 to any port 22` # Allow incoming network packets from 10.0.0.192 to any port 22 <br>
+Now this keyword `any` is necessary here Because when we specify the IP address of the sender, which is from, UFW also wants to know the IP address of the receiver, which is too. By typing in any, we say that this can come to any IP address of this machine. Since the server can have multiple network cards and multiple IPs, if we want to accept traffic only on a certain IP of this machine, we just replace the word any with that actual IP address. But now we have a problem with our rules.
+
+To understand the problem, we can type `sudo ufw status numbered` <br>
+
+* `$ sudo ufw delete 2` # Delete the rule with the number 2 <br>
+* `$ sudo ufw delete allow 22` # Delete the rule that allows incoming network packets on port 22 <br>
+
+* `$ sudo ufw allow from 10.0.0.0/24 to any port 22` # Allow incoming network packets from the  10.0.0.0/24 network to any port 22 <br>
+
+* `$ sudo ufw allow from 10.0.0.0/24` # Allow incoming network packets from the 10.0.0.0/24 network  will allow all ports<br>
+
+But let's go one step further. What if we want to accept traffic from all IPs in this range except for one of them? For example, maybe we want to disallow traffic coming from 10.0.0.37. For this purpose, instead of an allow rule, we can add a deny rule. <br>
+
+* `$ sudo ufw deny from 10.0.0.37` # Deny incoming network packets from 10.0.0.37 <br>
+
+However, there will be a problem here. Let's take another look at the current rules.
+* `$ sudo ufw status numbered` <br>
+
+And let's remove the first two rules here to simplify the explanation of the problem.
+* `$ sudo ufw delete 1`
+Okay, we'll type in sudo ufw delete 1. And then we'll run the same command again. Because after we delete the first rule, rule number 2 becomes rule number 1. And rule number 3 becomes rule number 2. And as you can see here, they've all moved up one level.
+* `$ sudo ufw delete 1` <br>
+Now list of Rules again by `sudo ufw status numbered` <br>
+
+![Network Image](net-img/img-1.png) <br>
+
+here is the problem. because 10.0.0.37 IP exist in  10.0.0.0/24 range, so it will be allowed. <br> To Solve this problem we have to keep denied rule first.
+
+inser rule sung numbered serial:
+* `$ sudo ufw insert 1 deny from 10.0.0.37` # Deny incoming network packets from 10.0.0.37 <br>
+**By default Firewall Rules processed in order.** <br>
+
+* `$ sudo ufw deny out on enp0s8 to 8.8.8.8` # Deny outgoing network packets on the enp0s8 interface to 8.8.8.8 <br>
+
+now try ping to 8.8.8.8, it will not work. <br>
+
+![Network Image](net-img/img-2.png) <br>
+
+When filtering incoming data, **TO** refers to a destination on this machine, namely on what IP of our machine that this is coming to. And **FROM** refers to the sender, the IP of the external machine that sent this to us. <br>
+
+But when we filter outgoing data, this is reversed. Now, the first **TO** columns do not refer to an IP of our machine, but to an external IP of a different machine. And **FROM** refers to an IP of our machine. If this seems a bit complicated, just think about sending an email. When you receive an email in the To field, people fill out your own email address. But when you are sending an email, the To field refers to a different person, an email address belonging to someone else. Same here, as the receiver the **TO** field refers to this machine. As a sender, the **TO** field refers to a different machine. <br><br>
+
+Lets Build our most complex UFW command where we specify all the details we learned about. <br>
+
+First, let's see an IP address belonging to this machine as we'll use it in our command. It will be 10.0.0.100 in this case.
+
+Now, let's build our command. We'll start with the sudo ufw allow and then type IN to specify that this applies to incoming data ON ENP0S3 to specify this applies to the ENP0S3 interface. Then we continue with FROM 10.0.0.192 to specify the sender's IP address. Then we'll add TO 10.0.0.100 to allow traffic on this IP of our machine. And finally, we'll specify the port and protocol. But we can't type in 80/tcp as we did for a previous command. When we fine-tune the FROM and TO IP addresses in this rule, we need a different approach.
+
+* `$ sudo ufw allow **in** on ENP0S3 from 10.0.0.192 to 10.0.0.100 proto tcp` # Allow incoming network packets on the ENP0S3 interface from 10.0.0.192 to 10.0.0.100 
+
+First, we type the usual port 80, but then we follow this with PROTO TCP to specify the TCP protocol. And for a rule with outgoing traffic, we just change the IN keyword to OUT. But remember, in this case, we apply a rule for our machine as a sender, not a receiver. So we have to reverse the FROM and TO specifications. <br><br>
+ 
+ 
+So our rule for outgoing traffic would be. 
+
+* `$ sudo ufw allow **out** on ENP0S3 from 10.0.0.100 to 10.0.0.192 proto tcp`
+
+We'll switch the IP addresses here. So it would be sudo ufw allow out on ENP0S3 from 10.0.0.100 to 10.0.0.192 proto tcp. <br>
+
+Now, with `sudo ufw status numbered`, we can see that the rules were added successfully. <br>
+![Network Image](net-img/img-3.png) <br>
+
+So if you remember the syntax for these longer UFW commands, you can basically build any rule you want. Even if you forget the syntax, the manual for UFW offers plenty of example commands to serve as a quick reminder.
