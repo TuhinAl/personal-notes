@@ -87,3 +87,88 @@ From this domain name, you can host multiple different services. All these diffe
 ![Network Image](image/dns-world/25.png) <br>
 
 So owning a public domain name gives you the ability to create services and expose them where people will be able to use them by referencing your domain name. Just like you build different things, like offices or apartments on the same piece of land, the DNS helps direct traffic to the right service, web, email, and all that, based on how you're trying to use the domain name. And we'll learn more about that as we progress through the course.<br>
+
+## Domain Name Anatomy:
+Domain names are written in this particular format of having words separated by dots to create a clear separation of ownership and responsibility. To understand why domain names use this format, we will use the analogy that compares owning a domain name and owning a piece of land. <br>
+![Network Image](image/dns-world/26.png) <br>
+
+First let's understand that domain names are read from right to left, with the rightmost part, like `.com`, being the least specific. This means that when you see a domain name like KodeKloud.com, you should think of it as KodeKloud being registered on a huge piece of land called com.<br>
+![Network Image](image/dns-world/27.png) <br>
+
+In this analogy, com is a large piece of land that can be subdivided into smaller lands. Think of this as if organizations could rent portions of this land to create their own services, just like registering a domain name with the *`.com`* suffix. <br>
+![Network Image](image/dns-world/28.png) <br>
+The domain registration process also works as a subdivision, where the owners of the com domain effectively say, we will make you responsible for this domain, as long as you are the owner. Think of this as if a piece of land was assigned to a company, individual or organization. <br>
+![Network Image](image/dns-world/29.png) <br>
+
+To keep the domain, they need to pay an annual registration fee through a registrar company capable of fixing all the legal documents for both parties. So following the analogy, when kodekloud.com was registered, <br>
+![Network Image](image/dns-world/30.png) <br>
+
+a subdivision of the `com land` was given to KodeKloud that they now maintain. This maintenance responsibility gives KodeKloud the authority to create services that can be referenced by using the kodekloud.com domain. But not all domains are registered under com, though.
+
+Take linuxfoundation.org, for example. In their registration process, they went to a different land altogether, one with the name of org. They requested org to subdivide a portion of its huge landmass so they could be responsible for it and build their services there.<br>
+![Network Image](image/dns-world/31.png) <br>
+
+As a matter of fact, the DNS can be represented by looking at it as an inverted tree. 
+![Network Image](image/dns-world/32.png) <br>
+
+From now on, I am going to start using this model and hopefully, we can go over the land leasing analogy to try to make sense of it from this tree perspective. <br>
+
+Let's first talk about the DNS tree by starting at the top. At the top of the DNS tree, we have something called the `root zone`. The root zone is like a central real estate agency that keeps track of all of the huge lands out there, in other words, the rightmost part of a domain name. 
+![Network Image](image/dns-world/33.png) <br>
+These huge territories in our analogy are called top-level domains. This includes common suffixes used for websites such as .com, .org, .net, .io, and others. 
+![Network Image](image/dns-world/34.png) <br>
+Then, below the top-level domains, we have what's known as a second-level domain, with examples such as `linuxfoundation.org` and `kodekloud.com` <br>
+![Network Image](image/dns-world/35.png) <br>
+
+Now, in this analogy, we've mentioned so far how the authority of using K`odeKloud.com` domain was given to KodeKloud as an organization by requesting `com` to create a subdivision of their land, so KodeKloud could own the domain and build the services they wanted on this domain, right? <br>
+![Network Image](image/dns-world/36.png) <br>
+
+But now, getting a bit technical here, what happens in reality is that KodeKloud went through a domain registration process and when they picked the domain name `kodekloud.com` They probably registered the domain through a company that offers domain registration services such as godaddy.com, Cloudflare, or others. <br>
+![Network Image](image/dns-world/37.png) <br>
+
+The domain registration companies are also known as registrars. So in this example, the registrar checked if the domain was available, which it was, I assume. Since the domain ends with com, then a petition to an organization called `Verisign` is made asking them to hand over the ownership and responsibilities, for KodeKloud.com. `Verisign` is the organization responsible for .com, and this process of handing over the ownership is what we call delegation of authority. The delegation of authority creates what’s known as a zone, giving KodeKloud control over their domain. But why exactly is Verisign being requested to delegate the authority to KodeKloud and what does this mean? <br>
+![Network Image](image/dns-world/38.png) <br>
+
+Well, without delegation of authority, all domains ending in .com would remain under Verisign’s control. Think about it this way. In our land ownership analogy, there's this huge land called .com. When an organization, individual, or company wants to register a domain name, they're asking for their own piece of this land. Without this subdivision process, the entire land would remain as com, meaning Verisign would maintain control over all the non-subdivided portions. <br>
+![Network Image](image/dns-world/39.png) <br>
+
+When these subdivisions happen, they create what you see in the DNS Tree diagram displayed on the screen, where we have multiple levels of ownership. Each level on the tree represents a `zone`. A zone is similar to the land being owned.<br>
+
+![Network Image](image/dns-world/40.png) <br>
+
+The domains and subdomains are similar to erecting buildings with different types of functions such as offices, apartments, and more. <br>
+![Network Image](image/dns-world/41.png) <br>
+
+In the case of KodeKloud, a subdomain that you may be familiar with is `engineer.kodekloud.com`. This subdomain is still part of the kodekloud.com zone. <br>
+![Network Image](image/dns-world/42.png) <br>
+
+and because of this, KodeKloud could continue to add more subdomains to it, like example1.engineer.kodekloud.com and example2.engineer.kodekloud.com while still being the owners.<br>
+![Network Image](image/dns-world/43.png) <br>
+And similarly, linuxfoundation.org has subdomains in this same zone, such as training.linuxfoundation.org.<br>
+![Network Image](image/dns-world/44.png) <br>
+
+Where I'm trying to go here, is that the same rule applies to the top-level domains. The org top-level domain, which is managed by the Public Interest Registry (PIR), and the com top-level domain, which is managed by VeriSign, could create multiple subdomains such as whatever.com or something.org while still being on the same zone, meaning they'd keep full ownership of these domains. <br>
+![Network Image](image/dns-world/45.png) <br>
+
+However, this doesn't generally happen, though, as organizations in charge of top-level domains take their role seriously Instead, their primary focus is probably on maintaining their registries and making domains available for organizations, individuals, or companies that wish to register them through authorized registrars. <br>
+![Network Image](image/dns-world/46.png) <br>
+
+But let’s tease our brains a little by thinking about what would happen in the fictitious case that KodeKloud decided to sell the engineer.kodekloud.com services to another company, but they chose to keep the same engineer.kodekloud.com domain name. <br>
+![Network Image](image/dns-world/47.png) <br>
+
+
+kodekloud.com and engineer.kodekloud.com both belong to the same zone right now, and this can be proven by using the `dig` command to both kodekloud.com domain and to its subdomain engineer.kodekloud.com. We can see in the output shown on the screen how both respond with the same set of `A` records, indicating they're in the same zone. <br>
+![Network Image](image/dns-world/48.png) <br>
+
+If KodeKloud wished to split the services into two different companies, what would happen here is that engineer.kodekloud.com would go through a delegation of authority process so that it'd begin to exist in a new zone similar to the animation shown on the screen. <br>
+![Network Image](image/dns-world/49.png) <br>
+
+We will learn the technicalities behind a delegation of authority in another section. For now, just think about it as the process of how a subdomain would be transferred to a new zone. <br>
+
+Now, I want you to observe how by doing the same dig command to linuxfoundation.org and tracing.linuxfoundation.org, its not immediately visible whether they are in the same zone or not, as both DNS queries may return a different set of `A` records IP Address in the reponse. <br>
+ ![Network Image](image/dns-world/50.png) <br>
+We will show a demo that how to safely determine if nested subdomains belong to the same zone or not. <br>
+
+
+
+
