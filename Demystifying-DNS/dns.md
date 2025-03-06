@@ -370,4 +370,103 @@ We also have sponsored TLDs and these are specialized TLDs that have sponsored c
 
 Finally we have test top-level domains which are specifically reserved for testing purposes. The main one you might see is .test which is never used in the real DNS system but it's reserved so developers can safely test DNS-related software without risking conflicts with real domain names.
 
+## Domain and Zones
+Before we progress further in the course, I want to make sure that everyone watching can confidently determine if two or more domains belong to the same zone or if they are in different zones.<br>
+![Network Image](image/domain_zones/1.png) <br>
 
+So far in this course, we've used some analogies comparing domains to pieces of land. We've talked about how registering a new domain name such as KodeKloud.com is similar to getting a piece of land that's part of a larger territory named com.
+
+It's important to highlight that the name of your piece of land will always include in its name, the name of the larger territory that it's part of.<br>
+![Network Image](image/domain_zones/2.png) <br>
+
+That's why we say kodekloud.com. When you own this piece of land, in other words, your domain, you can build different things in it, like how KodeKloud has built their website, their lab service, and the KodeKloud engineer platform.<br>
+![Network Image](image/domain_zones/3.png) <br>
+
+It's like having a piece of land where you can build different offices, classrooms, apartments, etc. What I want you to imagine is that, in this analogy, paying for this piece of land that you divide from .com is akin to the act of creating a new zone, in other words, a space where you have the authority over what gets built in there. <br>
+![Network Image](image/domain_zones/4.png) <br>
+
+Remember that zones are meant to represent authority or ownership that an organization, company, or individual has over a domain name. At first glance, the zone concept may seem pretty straightforward. <br>
+![Network Image](image/domain_zones/5.png) <br>
+
+You may look at a domain name like `mail.google.com`, separate each label, and quickly assume that each label represents a zone.<br>
+
+Following this intuition, you might think that this domain name involves these zones, the Root Zone, com zone, and google zone, with mail being part of google.com zone. With this particular example, you'd be correct, but there's a problem with this approach. We're basically relying on our familiarity with Google as a company to guess that google.com is a main domain, and therefore mail must be part of the Google zone. But what happens when we don't know the company, or when the structure isn’t so obvious? This becomes even trickier when we look at country code top-level domains which we learned about in our previous lecture. <br>
+
+![Network Image](image/domain_zones/6.png) <br>
+
+Remember how we discussed that some country codes can actually use two labels? Let's look at the example shown on screen.<br>
+![Network Image](image/domain_zones/7.png) <br>
+
+In Hong Kong's case, the hk country code TLD can also use com.hk, edu.hk, and other public suffixes. How can we represent a zone structure for a domain like yahoo.com.hk? <br>
+
+Looking at this domain name, we might be tempted to think that the zone structure is formed simply by going from right to left, where we would have the root zone,<br>
+![Network Image](image/domain_zones/8.png) <br>
+and then the HK zone,<br>
+![Network Image](image/domain_zones/9.png) <br>
+and then com.hk zone,<br>
+![Network Image](image/domain_zones/10.png) <br>
+and finally the yahoo.com.hk zone.<br>
+![Network Image](image/domain_zones/11.png) <br>
+But this is incorrect.<br>
+![Network Image](image/domain_zones/12.png) <br>
+
+Remember from our previous lecture that com.hk together forms a single zone. So, to help us solve this problem properly, we first have to be very clear about the different ways we can refer to parts of a domain name. In this course, we've used terms like top-level domain, second-level domain, third- and fourth-level domains, and also subdomains, and so on.<br>
+![Network Image](image/domain_zones/13.png) <br>
+
+And I want to explain these as I feel, this would make the process of understanding zones much easier. Let's look at this from two different perspectives, what I call the **absolute perspective** and the **relative perspective**.
+
+In the absolute perspective, we always count from right to left, starting from the Root Zone. In the domain name shown on the screen, moving from right to left, we have the Top-Level Domain, the second-level domain, the third-level domain, and so on. <br>
+![Network Image](image/domain_zones/14.png) <br>
+
+But there's also a relative perspective, which changes depending on where we're looking from. In the animation shown on the screen, if we start from example.com, then `test.example.com` would be the subdomain of `example.com`. And if we move our position to `test.example.com`, then `dev.test.example.com` would be the subdomain of `test.example.com`. So from this relative perspective, we also have the *domain apex*, or what some people call the naked domain. <br>
+![Network Image](image/domain_zones/15.png) <br>
+This is the actual domain name that was registered and represents the start of a zone. Think of it as a main domain that everything else in the zone branches off from.
+
+So going to the `yahoo.com.hk` zone structure, in the tree diagram shown on the screen, I'm showing what many would assume the zones look like. Where we started the Root Zone, then we have an hk zone, then a com zone, and finally, what would be the domain apex of yahoo.com.hk. <br>
+
+But this assumption about how the zones are structured would be incorrect, like we mentioned previously. This second diagram shows how these zones are actually structured.<br>
+
+Notice how com.hk global top-level domain is treated as a single unit in the zone hierarchy, with yahoo.com.hk being the domain apex of its zone.
+
+The difference between these two diagrams highlights why we can't just rely on counting labels from right to left to understand zone structures. <br>
+![Network Image](image/domain_zones/16.png) <br>
+
+This can be proven by using a `dig` command with a +trace option against the yahoo.com.hk domain.<br>
+![Network Image](image/domain_zones/17.png) <br>
+
+Okay, so running the dig command with the +trace option to a domain name, like I'm doing here, will give you a simulation of what happens in the DNS resolution process.
+Open Terminal and type `dig +trace yahoo.com.hk` and hit enter. <br>
+
+we will get lots of information from here. <br>
+we will get the Root Zone name servers:<br>
+![Network Image](image/domain_zones/18.png) <br>
+
+Then we will get Top level Domain Name server:<br>
+![Network Image](image/domain_zones/19.png) <br>
+
+Then we have who gave us the information:<br>
+![Network Image](image/domain_zones/20.png) <br>
+![Network Image](image/domain_zones/21.png) <br>
+
+So this essentially proves that `com.hk` is basically a subdomain of the hk top-level domain. Now, I just mentioned that the `dig + trace` command is a simulation of what happens in the DNS resolution process. And I’m saving this explanation for the next section when we are talking about the DNS infrastructure and its intricacies.<br>
+
+Okay, so moving on, I’m going to show you a domain that I own that I registered on Route 53 on where I actually registered a subdomain. And then I hosted the subdomain in a different zone. So you can see how it looks like in the cloud and also in `dig`. I have my primary AWS account. So if I go to Route 53, you can see that I have one hosted zone. And this is my domain name, jcroyolaun.io. When I click on this, you can see that I have the NS Records for the apex of the domain, which is jcroyolaun.io. And then I have the Start of Authority record, which indicates that this is the beginning of a zone. And then I also have a subdomain. <br>
+![Network Image](image/domain_zones/22.png) <br>
+
+But you can see that the name servers are different, right? <br> 
+![Network Image](image/domain_zones/23.png) <br>
+
+These ones are like 171.9. And we don't have that one right here. And so, yeah, you can do the work and see that they're actually different. So `jcroyolaun.io` and `staging.jcroyolaun.io` are different.<br>
+![Network Image](image/domain_zones/24.png) <br>
+And this is actually the other account where I have the staging hosted zone. And so what I did was that I created this zone.<br>
+![Network Image](image/domain_zones/25.png) <br>
+
+ And then it has different name servers, as you can see, and also a different start of authority. So you can see that this start of authority (SOA) indicates that there is a primary name server for resolving DNS requests for this particular domain. Now, if any of this is a little confusing, this is one of those things that we are going to explain more in depth in the next section. So just follow along and hopefully everything will be clear by then. All right, so I'm going to go back to the terminal. And then I'm going to show you that if I do `dig +trace jcroyolaun.io`, and you'll see that in this case we have the Root Zone and then the IO zone.
+
+![Network Image](image/domain_zones/26.png) <br>
+
+Example:<br>
+![Network Image](image/domain_zones/27.png) <br>
+KodeKloud.com decided to migrate the engineering service to a different company, but they want to keep the same domain. What they would do is basically do this process of delegation of authority so that the `engineer.kodekloud.com` would end up being in its own separate zone.<br>
+![Network Image](image/domain_zones/28.png) <br>
+So you can see here, if I type it in, it is not in a different zone, right? It’s in the same zone as KodeKloud.com, same as labs and so on and so forth. For them to be in different zones, just to finalize this demo lecture, I want to show you what the process would be, at least from the Route 53 perspective. What they would need to do is like right now, they probably have the `engineer.kodekloud.com` as a subdomain record. And then they’ll probably have some A records pointing to it. Yeah, so it’ll be something similar to this just to play around with it. They’ll have something like engineer@kodekloud.com. I’m obviously not going to save this right now, but it’ll be like adding an A record and then they’ll be basically pointing.<br>
