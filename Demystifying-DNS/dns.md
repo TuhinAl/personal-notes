@@ -470,3 +470,51 @@ Example:<br>
 KodeKloud.com decided to migrate the engineering service to a different company, but they want to keep the same domain. What they would do is basically do this process of delegation of authority so that the `engineer.kodekloud.com` would end up being in its own separate zone.<br>
 ![Network Image](image/domain_zones/28.png) <br>
 So you can see here, if I type it in, it is not in a different zone, right? It’s in the same zone as KodeKloud.com, same as labs and so on and so forth. For them to be in different zones, just to finalize this demo lecture, I want to show you what the process would be, at least from the Route 53 perspective. What they would need to do is like right now, they probably have the `engineer.kodekloud.com` as a subdomain record. And then they’ll probably have some A records pointing to it. Yeah, so it’ll be something similar to this just to play around with it. They’ll have something like engineer@kodekloud.com. I’m obviously not going to save this right now, but it’ll be like adding an A record and then they’ll be basically pointing.<br>
+
+## DNS as a System:
+
+
+## DNS - System or Protocol?
+DNS is not only a System but also a Protocol. Translating domain names into IP addresses happens through a complex process involving servers placed around the world working together in a hierarchical structure. The DNS as a protocol is about the rules for making a DNS query. It covers the format of the DNS request and the format of the response as well, and it relies on the DNS infrastructure to be in place. <br>
+![Network Image](image/dns-as-system/1.png) <br>
+
+
+## DNS - a Distributed System
+
+A system can be defined as a collection of interconnected elements working together with a purpose. An example of a system is an ecosystem, where living and non-living things interact. Nature maintains balance and life persists.<br>
+![Network Image](image/dns-as-system/2.png) <br>
+
+In the domain name system, we have different types of servers and infrastructure pieces interacting, thanks to which the translation of domain names into IP addresses happens.<br>
+![Network Image](image/dns-as-system/3.png) <br>
+
+Now let's take a look at the DNS design. For me, personally, it's remarkable how a system designed in the 80s remains so relevant, even after the exponential internet growth in recent years.
+
+The DNS was designed by smart people that seemed to have predicted that the internet was going to grow. Therefore, the DNS was architected as a distributed system. As a distributed system, the DNS is designed to spread the responsibilities of its various operations in different server types across multiple locations worldwide. It's not just one big computer somewhere that knows all the domain names and IP addresses. Thanks to its design, the DNS is fast, reliable, and scalable. <br>
+![Network Image](image/dns-as-system/4.png) <br>
+
+We want to have speed, as a slow DNS would be a huge bottleneck for internet communication. We want to have reliability, as the DNS needs to be always available. This is achieved by fault tolerance, in other words, the ability of a system to keep operating, even on failure.
+
+Imagine a world where sometimes the DNS is down, so you gotta type the Netflix or YouTube IP address in your browser.
+
+We want to have scalability, because the internet grows, and despite its growth rate, there shouldn’t be a concern for losing speed, or reliability as more people adopt the internet. Let’s talk about how the DNS design helps achieve the performance, reliability, and scalability that it is known for.
+
+For this, we’ll define a simplified way to look into **two major components** in the domain name system. We have a type of server called the **1. recursive resolver**, which will be responsible for asking other servers for information.<br>
+![Network Image](image/dns-as-system/5.png) <br>
+
+Then we have a **2. name server**, which is responsible for storing the information of which domain name points to which IP address. <br>
+![Network Image](image/dns-as-system/6.png) <br>
+
+
+I like to imagine these two components as detectives, so let's use that analogy to explain the whole process.<br>
+![Network Image](image/dns-as-system/7.png) <br>
+
+The recursive resolver is like a seasoned detective who knows how to navigate the complex world of DNS. This detective is skilled at quickly finding the right sources of information and remembering previous cases. The name server acts as a specialized agent with access to the source of truth. <br>
+![Network Image](image/dns-as-system/8.png) <br>
+
+These agents are strategically positioned around the world, each safeguarding crucial information about domain names and their corresponding IP addresses. <br>
+![Network Image](image/dns-as-system/9.png) <br>
+
+This speed of DNS is achieves by having multiple detectives and agents working together.
+When a DNS request comes in, the recursive resolver detective will often attempt to solve the case by referring to notes from previous investigations. This is known as caching, and it's often the first place where the investigation begins. <br>
+![Network Image](image/dns-as-system/10.png) <br>
+
