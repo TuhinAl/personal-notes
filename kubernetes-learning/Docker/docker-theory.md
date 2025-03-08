@@ -1,3 +1,48 @@
+Dockerfile:
+```
+DOCKERFILE
+
+FROM         -> To pull image
+
+RUN          -> To run command
+
+EXPOSE       -> To open port
+
+COPY         -> to copy file & directories from host to image
+
+ENV          -> to set environment variable
+
+CMD          -> specifies the command to run when a container is run from image
+
+ENTRYPOINT   -> specifies the command to run when a container is 
+                run from image but allows additional argument to be 
+                passed in.
+
+ADD          -> copies files from host to image, downloads zip/tar files from 
+                given link & extracts it auto.
+
+ARG          -> Defines variables that passed to container while building image
+
+VOLUME       -> create volume inside in container for share 1 container volume to another
+
+WORKDIR      -> to set working directory
+
+MAINTAINER   -> To set name & email of author/user
+
+LABEL        -> To add metadata
+
+USER         -> To set user
+
+HEALTHCHEK   -> To specifies path for healthcheck
+
+SHELL        -> specifies shell to be used to run commands
+
+STOP SIGNAL  -> specifies the signal to sent container when want to 
+                stop container gracefully
+```
+
+
+
 Docker Container Lifecycle: A container is a self-contained, isolated environment that encapsulates a set of processes and their dependencies. Containers only lives as long as the process is running. Once the process stops, the container automatically stops.
 
 1. Container Creation: docker run <image>
