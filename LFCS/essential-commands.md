@@ -929,3 +929,11 @@ Now, with `sudo ufw status numbered`, we can see that the rules were added succe
 ![Network Image](net-img/img-3.png) <br>
 
 So if you remember the syntax for these longer UFW commands, you can basically build any rule you want. Even if you forget the syntax, the manual for UFW offers plenty of example commands to serve as a quick reminder.
+
+## Port Redirection and Network Address Translation:
+**Port Redirection:** Port redirection is a technique that allows us to redirect incoming traffic on a specific port to a different port. <br>
+**Network Address Translation:** Network Address Translation is a technique that allows us to change the source or destination IP address of a packet. <br>
+
+
+
+# Configure SSH Servers and Clients:
