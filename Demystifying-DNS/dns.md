@@ -514,7 +514,134 @@ The recursive resolver is like a seasoned detective who knows how to navigate th
 These agents are strategically positioned around the world, each safeguarding crucial information about domain names and their corresponding IP addresses. <br>
 ![Network Image](image/dns-as-system/9.png) <br>
 
-This speed of DNS is achieves by having multiple detectives and agents working together.
-When a DNS request comes in, the recursive resolver detective will often attempt to solve the case by referring to notes from previous investigations. This is known as caching, and it's often the first place where the investigation begins. <br>
+This speed of DNS is achieves by having multiple detectives and agents working together. When a DNS request comes in, the recursive resolver detective will often attempt to solve the case by referring to notes from previous investigations. This is known as caching, and it's often the first place where the investigation begins. <br>
 ![Network Image](image/dns-as-system/10.png) <br>
 
+Later in the course, we will learn about different caching layers that play a role in the speed of the DNS. If the detectives can find anything in cache, AKA their notes, they’ll know exactly which name server agents to contact for the most up-to-date information. <br>
+
+The reliability of DNS comes from having a vast network of resolvers and agents. If one resolver or agent is unavailable, there are always others ready to take on the case. This redundancy ensures that the DNS investigation process continues smoothly, even if some team members are temporarily out of action. <br>
+![Network Image](image/dns-as-system/11.png) <br>
+
+As for scalability, the DNS is designed to grow its directory as needed. As the Internet expands with more domains and users, new records and agents can be easily added to the network. This flexibility allows the DNS to handle an ever-increasing number of requests without ever compromising on speed or accuracy. <br>
+![Network Image](image/dns-as-system/12.png) <br>
+
+I want to emphasize the distributed system concept one more time. Why? First, because DNS, as one of the foundations of the Internet, being a distributed system, is why the DNS works so well. But being distributed is also why the DNS is hard for us, engineers, to learn and troubleshoot, because there’s no longer a single point of failure to look for. Second, because building the muscle of defining system designs in a correct category is a very important part of learning, and improving as an engineer, as it gives the ability to see patterns and correlations in other system designs as well. <br><br>
+
+## DNS Resolvers
+Personally, I find the concept of resolvers as one of those that are simple on the surface but can be very complex when going deeper, and it's no surprise, as we're talking about one of the core mechanisms that make the internet work.<br>
+
+Because of this complexity, I'm trying to simplify the concept by comparing DNS resolvers to detectives that know their way around the complex DNS world, so they can help us, the end users, browse the World Wide Web using simple domain names we can remember. Remember that the role of DNS resolvers is to receive a DNS query and look for an answer by doing something that people usually refer to as walking the DNS Tree. <br>
+![Network Image](image/dns-resolvers/1.png) <br>
+
+I'll explain this in detail later in this section, but it basically refers to the act of starting the DNS resolution process at the root of the DNS tree and asking a root zone nameserver for the location of a top-level domain. Then you request the top-level domain for the location of a second-level or third-level domain.<br>
+![Network Image](image/dns-resolvers/2.png) <br>
+
+Domain depending on the zone hierarchy, and so on. We went over nameservers in the previous section. To put it simply, let's say you have a Python application and you want to deploy it so others can access it. You might use DigitalOcean, where you can create a Linux virtual machine, which they call a droplet, and deploy your code there. DigitalOcean will give you a public IP address that anyone can use to reach your application through the Internet. <br>
+![Network Image](image/dns-resolvers/3.png) <br>
+
+Now, if you want people to access it using a friendly domain name like `myawesomepythonapp.xyz` instead of that IP address, you just need to add an A record pointing to your application's IP address on the nameservers assigned to your domain. These nameservers are owned by different organizations responsible for each zone.<br>
+![Network Image](image/dns-resolvers/4.png) <br>
+
+IANA manages the root zone nameservers, various companies manage TLD zones like COM, being managed by VeriSign, and your domain's nameservers will be managed by whoever you choose as your provider. But who owns the resolvers, which are our DNS detectives? <br>
+![Network Image](image/dns-resolvers/5.png) <br>
+
+Well, there are several players in this game. Some big companies provide public resolvers worldwide, like Google, Cloudflare, or others.
+
+Internet providers also run their own resolvers. For example, I'm from Mexico, and when I connect to the Internet, my resolver is automatically assigned to Telmex, which is a major ISP here. <br>
+![Network Image](image/dns-resolvers/6.png) <br>
+
+Looking at this analogy, we can see how there are multiple types of detectives. Some of them are deemed to be faster or slower than others, and this can be benchmarked by using tools like `dnsperf.com`. <br>
+
+Resolvers can be configured in several ways. Your laptop or phone typically uses the resolver provided by your Internet Service Provider by default, but you can change this in your operating system's network settings to use other resolvers you choose.<br>
+![Network Image](image/dns-resolvers/7.png) <br>
+
+On Linux systems, for example, these resolver settings live in the `/etc/resolv.conf` file, where you can specify which nameserver to use by adding or modifying the nameserver line. But what if you want to test different resolvers without modifying your system settings?<br>
+![Network Image](image/dns-resolvers/8.png) <br>
+
+You can use dig, for example. By using the at symbol, followed by an IP address,<br> 
+![Network Image](image/dns-resolvers/9.png) <br>
+
+It's like walking past your neighborhood's assigned detective and asking a different detective to help you instead.
+![Network Image](image/dns-resolvers/10.png) <br>
+![Network Image](image/dns-resolvers/11.png) <br>
+![Network Image](image/dns-resolvers/12.png) <br>
+This way, you can compare how different resolvers respond to the same query,
+
+which can be useful for troubleshooting DNS issues or testing resolver performance.<br>
+![Network Image](image/dns-resolvers/13.png) <br>
+![Network Image](image/dns-resolvers/14.png) <br>
+![Network Image](image/dns-resolvers/15.png) <br>
+
+The purpose of resolvers is to help the DNS be fast. Think of them as detective agencies that help distribute the workload. If every single question about a domain name had to go directly to the authoritative nameservers, these nameservers would be overwhelmed with millions of repeated queries.<br>
+![Network Image](image/dns-resolvers/16.png) <br>
+
+The resolvers use caching mechanisms to help with DNS speed. Think about this as if the detectives used a notebook where they write common mysteries. When someone asks, where is google.com, and the detective just solved that case 5 minutes ago, they don't need to start a new investigation, they just check their notebook and give you the answer right away.<br>
+![Network Image](image/dns-resolvers/17.png) <br>
+In technical terms, this means the resolver has cached the DNS record and can respond without querying the authoritative nameservers again. This caching mechanism is crucial because it reduces the load on nameservers across the internet while making responses much faster for users.<br>
+
+
+## Nameserver
+
+In our previous lecture, we talked about DNS resolvers working like detectives trying to track down IP addresses. These detectives often need help from special agents who have access to the source of truth about specific domains.
+The special agents in this analogy are the authoritative nameservers.<br>
+![Network Image](image/nameserver/1.png) <br>
+
+Remember that the DNS is all about finding the IP address for the infrastructure providing a service by using a friendlier domain name. Without the DNS, the Internet would require the use of IP addresses for everything. <br>
+![Network Image](image/nameserver/2.png) <br>
+
+The nameservers are responsible for maintaining this up-to-date information of a domain name and the IP address of the infrastructure providing the service. <br>
+![Network Image](image/nameserver/3.png) <br>
+
+When we perform a DNS query, for example, by typing a domain name in our browser, the resolver, a.k.a. the detective, begins an investigation to find the IP address associated with that domain name.  <br>
+
+To get accurate information, the detective needs to find and talk to the special agents, or authoritative nameservers, who have the official records for that domain. <br>
+![Network Image](image/nameserver/4.png) <br>
+
+We previously established that nameservers act similarly to a database. They store and manage all the information about domain names and their IP addresses. This setup follows some important principles we see in database system design principles.<br>
+![Network Image](image/nameserver/5.png) <br>
+
+In the world of databases, when we deal with massive amounts of data, we often need ways to handle it efficiently.
+One key concept in database design is called sharding, in other words, splitting up a huge database into smaller pieces that different servers can handle. <br>
+![Network Image](image/nameserver/6.png) <br>
+
+This makes everything faster and more reliable because each server only needs to deal with its own piece of the data.<br>
+
+In the DNS, nameservers are designed with these principles in mind. Instead of having one massive server trying to handle the entire Internet's worth of domain names,<br>
+![Network Image](image/nameserver/7.png) <br>
+
+Different nameservers are responsible for different zones. Some handle com domains, others handle org domains, and some handle country domains like UK. This distributed system approach means that if one part has problems, the rest of the system can still function. <br>
+![Network Image](image/nameserver/8.png) <br>
+
+Each nameserver maintains zone files containing records that follow a specific format. Let me show you what a basic zone file looks like. <br>
+![Network Image](image/nameserver/9.png) <br>
+
+This zone file contains different types of records. Each line represents a resource record that tells us important information about the domain. <br>
+![Network Image](image/nameserver/10.png) <br>
+
+The A records point to IPv4 addresses, while NS records indicate which nameservers are authoritative for this domain. Every domain must have at least two nameservers for redundancy.<br>
+![Network Image](image/nameserver/11.png) <br>
+
+Looking at a real-world example, let me run a dig command to show you Google's nameservers. On screen, I'm running a dig command to see how many nameservers Google has. Looking at this output, we can see that Google maintains four nameservers. This is quite common for large organizations, though the minimum requirement is two nameservers. <br>
+![Network Image](image/nameserver/12.png) <br>
+
+This redundancy **ensures that DNS queries can always be answered**, even if one or more nameservers become unavailable. <br> Something important to talk about is that, among these nameservers, one is designated as the primary nameserver.
+
+Imagine the primary nameserver as a lead agent who gets the information first, and then it distributes the source of truth among its peers.
+
+We can identify the primary nameserver by looking at something called the SOA record, or **Start of Authority record**. Let me show you what this looks like. On screen, I'm running another dig command, this time by requesting the SOA record by typing `dig google.com SOA`. <br>
+
+Looking at this SOA record, we can see that `ns1.google.com` is the primary nameserver. This means that this nameserver holds the master copy of all the zone data <br>
+![Network Image](image/nameserver/13.png) <br>
+but, as we've learned, the DNS was designed as a fault-tolerant distributed system.
+
+If there was only one nameserver and it failed, the entire domain would become unreachable. That's why having multiple nameservers is essential for the Internet to run smoothly.<br>
+![Network Image](image/nameserver/14.png) <br>
+
+The primary nameserver, `ns1.google.com` in this case, shares its data through a replication process with all the other nameservers listed in the NS Records. <br>
+![Network Image](image/nameserver/15.png) <br>
+This distributed database approach ensures that no matter which nameserver our resolver contacts, it will receive the same accurate information from the zone's official records.
+
+There's another lecture dedicated to explaining the concept of zone transfers, in other words, the mechanism that keeps all nameservers synchronized with the same records, which is crucial for keeping the distributed nature of DNS by copying zone data from the primary nameserver to all other nameservers in the zone.
+
+## Walking the DNS Tree
+![Network Image](image/walking-dns-tree/1.png) <br>
