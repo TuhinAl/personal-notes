@@ -644,4 +644,70 @@ This distributed database approach ensures that no matter which nameserver our r
 There's another lecture dedicated to explaining the concept of zone transfers, in other words, the mechanism that keeps all nameservers synchronized with the same records, which is crucial for keeping the distributed nature of DNS by copying zone data from the primary nameserver to all other nameservers in the zone.
 
 ## Walking the DNS Tree
+Here is a list of Topics that we will cover in this section:<br>
 ![Network Image](image/walking-dns-tree/1.png) <br>
+
+First, we are going to go over example of the steps that happen when a domain name gets translated into an IP by the DNS, which is often known as walking the DNS tree. <br>
+![Network Image](image/walking-dns-tree/2.png) <br>
+
+Then we'll talk about delegation of authority, how DNS zones can delegate control of their subdomains to other name servers, which is a fundamental part of how DNS works as a distributed system. <br>
+![Network Image](image/walking-dns-tree/3.png) <br>
+
+This will lead us to an interesting problem. If name servers are identified by domain names, how do we resolve these domain names if we need DNS to resolve names in the first place? <br>
+![Network Image](image/walking-dns-tree/4.png) <br>
+
+And even more basic, how do we even reach the root name servers when we don't have any IP addresses to start with?This is what we call the chicken and egg problem in DNS.<br>
+![Network Image](image/walking-dns-tree/5.png) <br>
+
+Finally, we'll learn about glue records, a special type of record that helps solve this circular dependency and makes the whole DNS system possible. <br>
+![Network Image](image/walking-dns-tree/6.png) <br>
+Alright, so let's get started. Finding an IP address from a domain name works like a detective game with strict rules.<br>
+![Network Image](image/walking-dns-tree/7.png) <br>
+
+Domain names have labels separated by dots, and the recursive resolver must start by asking the root zone name servers. <br>
+![Network Image](image/walking-dns-tree/8.png) <br>
+We always begin at the root zone. Here, we ask for information about the domain name formed by the first immediate label to the left <br>
+![Network Image](image/walking-dns-tree/9.png) <br>
+
+which, relative to our current position in the DNS hierarchy, represents a subdomain of where we are.
+
+For example, from root, com is a subdomain of root, <br>
+![Network Image](image/walking-dns-tree/10.png) <br>
+and from com, example would be a subdomain of com.<br>
+![Network Image](image/walking-dns-tree/11.png) <br>
+If the name servers are not the owners of this subdomain, they'll respond with, I don't own this domain, but here are the name servers that do, and by definition, this means we are moving forward to a different zone since ownership determines zone boundaries. <br>
+![Network Image](image/walking-dns-tree/12.png) <br>
+Then we ask these new name servers about the next label to the left, repeating this process of either getting direct information if they own the domain formed by that label, or being directed to different name servers if they don't, which means crossing another zone boundary.
+![Network Image](image/walking-dns-tree/13.png) <br>
+
+This traversal through zones, determined by domain ownership and authority, is why understanding delegation of authority in glue records becomes crucial, which we are going to cover next.<br>
+![Network Image](image/walking-dns-tree/14.png) <br>
+![Network Image](image/walking-dns-tree/15.png) <br>
+
+But first, let's go over a few exercises of walking the DNS tree together to reinforce these concepts. Let's start with `engineer.kodekloud.com` since we are already familiarized with it.
+
+Starting at the root zone, we ask for information about the domain name formed by the first immediate label to the left, which is `com`.<br>
+![Network Image](image/walking-dns-tree/16.png) <br>
+
+The root name servers are not the owners of this subdomain, so they respond with, I don't own this domain, but here are the name servers that do, and by definition, this means we are moving to a different zone. <br>
+![Network Image](image/walking-dns-tree/17.png) <br>
+
+Now we are at the com zone, and we ask for information about the domain name formed by the first immediate label to the left, which is `KodeKloud`. The com name servers are not the owners of this subdomain, so they respond with, I don't own this domain, but here are the name servers that do, and by definition, we are moving to a different zone.<br>
+![Network Image](image/walking-dns-tree/18.png) <br>
+![Network Image](image/walking-dns-tree/19.png) <br>
+
+Now we are at the kodekloud.com zone, and we ask for information about the domain name formed by the first immediate label to the left, which is engineer. Since this is a subdomain that's part of their zone, they own it, they directly provide us with the IP address with no further zone transitions needed. <br>
+![Network Image](image/walking-dns-tree/20.png) <br>
+
+Now let's walk through `museum.co.uk`. Starting at the root zone, we ask for information about the domain name formed by the first immediate label to the left, which is uk. The root name servers are not the owners of this domain, so they respond with, I don't own this domain, but here are the name servers that do<br>
+![Network Image](image/walking-dns-tree/21.png) <br>
+and by definition, this means we are moving to a different zone. <br>
+Now we are at the uk zone, and we ask for information about the domain name formed by the first immediate label to the left, which is co. Since co.uk is actually a subdomain that's part of the uk zone, they own it, we continue in the same zone. When we ask about museum, the uk name servers are not the owners of this subdomain, so they respond with, I don't own this domain, but here are the name servers that do. <br>
+![Network Image](image/walking-dns-tree/22.png) <br>
+and by definition, this means we are now moving to a different zone. Now we are at the museum.co.uk zone, and since we've reached our destination and they own it, they directly provide us with the IP address.<br>
+![Network Image](image/walking-dns-tree/23.png) <br>
+
+Finally, let's examine a domain I created. For this course called `jcroyowaun.io`. Keep in mind that depending on when you are taking this course, the domain may exist or not, but assume the explanations and command outputs were true at the moment of recording this video. For this exercise, we are going to use a subdomain of jcroyowaun.io called `staging.jcroyowaun.io`. <br>
+![Network Image](image/walking-dns-tree/24.png) <br>
+
+Starting at the root zone, we ask for information about the domain name formed by the first immediate label to the left, which is io. The root name servers are not the owners of this subdomain, so they respond with, I don't own this domain, but here are the name servers that do, and by definition, this means we are moving to a different zone. Now we are at the io zone, and we ask for information about the domain name formed by the first immediate label to the left, which is jcroyowaun. The io name servers are not the
