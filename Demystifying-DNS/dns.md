@@ -710,4 +710,97 @@ and by definition, this means we are now moving to a different zone. Now we are 
 Finally, let's examine a domain I created. For this course called `jcroyowaun.io`. Keep in mind that depending on when you are taking this course, the domain may exist or not, but assume the explanations and command outputs were true at the moment of recording this video. For this exercise, we are going to use a subdomain of jcroyowaun.io called `staging.jcroyowaun.io`. <br>
 ![Network Image](image/walking-dns-tree/24.png) <br>
 
-Starting at the root zone, we ask for information about the domain name formed by the first immediate label to the left, which is io. The root name servers are not the owners of this subdomain, so they respond with, I don't own this domain, but here are the name servers that do, and by definition, this means we are moving to a different zone. Now we are at the io zone, and we ask for information about the domain name formed by the first immediate label to the left, which is jcroyowaun. The io name servers are not the
+Starting at the root zone, we ask for information about the domain name formed by the first immediate label to the left, which is io. The root name servers are not the owners of this subdomain, so they respond with, I don't own this domain, but here are the name servers that do, and by definition, <br>
+![Network Image](image/walking-dns-tree/25.png) <br>
+this means we are moving to a different zone. <br>
+![Network Image](image/walking-dns-tree/26.png) <br>
+Now we are at the `jcroyowaun.io` zone, and we ask for information about the domain name formed by the first immediate label to the left, which is staging. The `jcroyowaun.io` name servers are not the owners of this subdomain, so they respond with, I don't own this domain, but here are the name servers that do,
+![Network Image](image/walking-dns-tree/27.png) <br>
+
+and by definition, this means we are moving to a different zone, <br>
+![Network Image](image/walking-dns-tree/28.png) <br>
+showing us that even subdomains can be delegated to different zones. Now we are at the staging.jcroyowaun.io zone, and since we've reached our destination, and they own it, they directly provide us with the IP address. <br>
+![Network Image](image/walking-dns-tree/29.png) <br>
+
+To illustrate these DNS tree traversal exercises, we used an online tool called `dnszones.dev`.<br>
+![Network Image](image/walking-dns-tree/30.png) <br>
+For general use cases, I would recommend using the command line. Running `dig +trace` will produce standard output of the DNS tree walking process. As seen in the animation on screen, running `dig + trace kodekloud.com`,<bt>
+![Network Image](image/walking-dns-tree/31.png) <br>
+the query starts by making a request to the root name servers. Our first response comes from `a.root-servers.net`, giving us the list of com name servers.<br>
+![Network Image](image/walking-dns-tree/32.png) <br>
+Then jtld-servers.net from the com zone responds with Cloudflare's name servers for kodekloud.com.<br>
+![Network Image](image/walking-dns-tree/33.png) <br>
+And finally, cheryl.ns.cloudflare.com provides us the actual IP addresses. We can see each response and who provided it right here in the output as we walk through the DNS tree.<br>
+![Network Image](image/walking-dns-tree/34.png) <br>
+**Please run this command multiple times to examine the output.**
+![Network Image](image/walking-dns-tree/35.png) <br>
+We may notice that we  get the answers from different name server each time, This is because DNS uses multiple servers at each level for redundancy and load balancing. Picking a different server each time makes sense for spreading the load more evenly to avoid overloading the infrastructure. <br>
+![Network Image](image/walking-dns-tree/36.png) <br>
+![Network Image](image/walking-dns-tree/37.png) <br>
+![Network Image](image/walking-dns-tree/38.png) <br>
+
+This exercise that we just went over is called walking the DNS tree. By walking the DNS tree, we reinforce the concept of how domain names are separated by an ownership and authority model called DNS zones. <br>
+![Network Image](image/walking-dns-tree/39.png) <br>
+
+When we see a subdomain with different NS records than its parent domain, we've found a delegation of authority. <br>
+![Network Image](image/walking-dns-tree/40.png) <br>
+
+Think of the delegation of authority like a ceremony where a subdomain is transferred to its own zone. This process is carried out by assigning new name servers to the subdomain.<br>
+![Network Image](image/walking-dns-tree/41.png) <br>
+while ensuring the parent domain keeps an identical copy of the subdomain NS records.<br>
+![Network Image](image/walking-dns-tree/42.png) <br>
+So we end up with identical NS records in both the parent and child zones.<br>
+![Network Image](image/walking-dns-tree/43.png) <br>
+But wait, this brings up an interesting question. **How can the DNS resolution process involve traversing through zones, when the zones use nameserver records which are formed of domain name?** <br>
+![Network Image](image/walking-dns-tree/44.png) <br>
+Remember that we mentioned earlier how resolving an IP address from a domain name is like a detective game with strict rules? Well, every actor in the DNS must adhere to these rules.<br>
+![Network Image](image/walking-dns-tree/45.png) <br>
+
+**How do we reach the root name servers in the first place?** <br>
+**How do name servers find each other?** <br>
+
+This is what we call the chicken-and-egg problem in DNS because it feels that we need DNS to use DNS. To resolve the chicken-and-egg problem, we have two solutions in place, each at a different level of the DNS system. <br>
+![Network Image](image/walking-dns-tree/46.png) <br>
+
+**Number one**, every recursive resolver comes pre-configured with a list of IP addresses for all the root name servers called root hints.<br>
+![Network Image](image/walking-dns-tree/47.png) <br>
+
+Since recursive resolvers are publicly accessible on the internet via their IP addresses, any client can send a query to a recursive resolver.<br>
+![Network Image](image/walking-dns-tree/48.png) <br>
+
+The recursive resolver then uses the root hints to contact the appropriate root name server and begin traversing the DNS hierarchy to resolve the requested domain name. <br>
+![Network Image](image/walking-dns-tree/49.png) <br>
+
+Number two, name servers from a parent zone may point to the exact location of the delegated child zone's name servers using a special record type called `glue records`.<br>
+![Network Image](image/walking-dns-tree/50.png) <br>
+
+Glue records are A or quad A records added to the parent zone's zone file to provide the IP addresses of the child zone's name servers.<br>
+![Network Image](image/walking-dns-tree/51.png) <br>
+
+For example, during the delegation of authority, when we're assigning new name servers to a child zone, we need to ensure that the parent zone maintains a copy of the child zone's NS records.<br>
+![Network Image](image/walking-dns-tree/52.png) <br> 
+![Network Image](image/walking-dns-tree/53.png) <br> 
+ 
+We may also include glue records in the parent zone's zone file, providing the IPv4 and/or IPv6 addresses of the child zone's name servers. <br>
+![Network Image](image/walking-dns-tree/54.png) <br>
+This is an example of how the NS records and glue records for KodeKloud.com would look in the com zone file.<br>
+
+
+
+All com name servers must have a copy of these records in their zone files. Now, as end users, we probably have multiple options to check the glue records, but the one that I'm comfortable with is using the dig command by querying an authoritative nameserver directly using the @ symbol and then adding then + additional flag as shown in the output display on screen.<br>
+![Network Image](image/walking-dns-tree/55.png) <br>
+
+In this command, we're directly querying the a.gtld-servers.net nameserver for the kodekloud.com domain. By using the +additional flag, we can see the additional section highlighted on screen, which shows all the A and AAAA records for the nameservers. These are what we call glue records.<br>
+![Network Image](image/walking-dns-tree/56.png) <br>
+
+Observe how we can modify dig's behavior and output by using different flags and even querying name servers directly using the @ symbol, basically ignoring the recursive resolver by talking directly to the name server. <br>
+![Network Image](image/walking-dns-tree/57.png) <br>
+
+I find it interesting to highlight that since we are querying the authoritative name server directly instead of letting the recursive resolver handle the query for us, we have a warning message saying recursion requested but not available. <br>
+![Network Image](image/walking-dns-tree/58.png) <br>
+This is because, as we'll learn in the DNS as a protocol section, DNS requests have a question section with flags and bits enabled that modify its behavior.
+
+There's a recursion bit that's usually enabled, which means please follow the entire chain of DNS queries needed to resolve the name if you don't have the asewer. 
+![Network Image](image/walking-dns-tree/59.png) <br>
+
+But we are querying a nameserver directly.
