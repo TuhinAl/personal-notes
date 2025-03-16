@@ -803,4 +803,54 @@ This is because, as we'll learn in the DNS as a protocol section, DNS requests h
 There's a recursion bit that's usually enabled, which means please follow the entire chain of DNS queries needed to resolve the name if you don't have the asewer. 
 ![Network Image](image/walking-dns-tree/59.png) <br>
 
-But we are querying a nameserver directly.
+But we are querying a nameserver directly. And nameservers are configured to not allow recursion even when asked. <br> 
+![Network Image](image/walking-dns-tree/60.png) <br>
+This is a safety measure to prevent the nameservers from being overwhelmed by recursive queries that would force them to perform lookups on behalf of any client that asks, which could lead to resource exhaustion and potential denial of service.<br>
+![Network Image](image/walking-dns-tree/61.png) <br>
+But wait, there is more information I want to give you because we’ve just started the happy path of walking the DNS tree where nameservers have glue records of the delegated nameservers to quickly point their locations.
+
+Sometimes the nameservers of a parent domain won’t have the glue records with the IP addresses of the delegated child domain’s nameservers, as is the case in the command shown on screen.<br>
+![Network Image](image/walking-dns-tree/62.png) <br>
+In these cases, where glue records are not present to point the exact location of the delegated zone nameservers, <br>
+![Network Image](image/walking-dns-tree/63.png) <br>
+the only option to resolve the domain name is to walk the DNS tree all over again, which is a warranted way to complete the domain resolution process.<br>
+![Network Image](image/walking-dns-tree/64.png) <br>
+
+In a previous lecture, I think I called dig +trace as being a simulation of walking the DNS tree. <br>
+![Network Image](image/walking-dns-tree/65.png) <br>
+
+And while it may not be entirely accurate to call it a simulation, it's true that DIG + trace will omit some steps when dealing with out-of-the-ordinary circumstances, and the resolver will rely on its cached knowledge to resolve certain DNS queries.<br>
+![Network Image](image/walking-dns-tree/66.png) <br>
+I was very curious and I wanted to demonstrate this in the course when creating these lectures, so I tried using a trace command to examine the system calls made, when using the DIG + trace command.<br>
+![Network Image](image/walking-dns-tree/67.png) <br>
+![Network Image](image/walking-dns-tree/68.png) <br>
+![Network Image](image/walking-dns-tree/69.png) <br>
+![Network Image](image/walking-dns-tree/70.png) <br>
+![Network Image](image/walking-dns-tree/71.png) <br>
+![Network Image](image/walking-dns-tree/72.png) <br>
+![Network Image](image/walking-dns-tree/73.png) <br>
+![Network Image](image/walking-dns-tree/74.png) <br>
+![Network Image](image/walking-dns-tree/75.png) <br>
+This is the exact command that I used. Now, the output of this command is very detailed and verbose, but for simplicity, in this lecture, I'm placing the pieces that matter.
+
+We see that after getting the AWS name server records from IO's name servers, instead of walking the DNS Tree again, the resolver, which is configured as the IP address 8.8.8.8, directly returns the IP address for these name servers from its cache.<br>
+![Network Image](image/walking-dns-tree/76.png) <br>
+From this output, we can infer that the normal DNS Tree walk, starting from the Root Zone and to dot IO name servers, uses the connect function. <br>
+![Network Image](image/walking-dns-tree/77.png) <br>
+
+This represents a true walk in the tree, where we request information from nameservers. But, When We need AWS name server IPs, it suddenly switches to the send to function, where it directly requests the resolver 8.8.8.8 for information. This shows we're abandoning the tree walk and relying on the resolver's cache, and that DIG plus trace isn't really doing the complete resolution process, as it relies on the resolver's cached knowledge when encountering certain circumstances. This caching mechanism is crucial for DNS performance, as we've learned in the previous lecture. <br>
+![Network Image](image/walking-dns-tree/78.png) <br>
+
+If you have a Linux machine, you can try this command. I would advise you to look for the connect and receive message and send to system calls when looking at the huge output.<br>
+![Network Image](image/walking-dns-tree/79.png) <br>
+All these command line techniques showcased in this lecture, including the use of the add symbol to communicate directly with the name servers instead of going through the resolvers, are especially useful when debugging and to compare if DNS records match between different name servers.<br>
+![Network Image](image/walking-dns-tree/80.png) <br>
+Because, as we’ll learn in the zone transfer lecture, name servers must maintain exact copies of DNS records.<br>
+![Network Image](image/walking-dns-tree/81.png) <br>
+Replication mechanisms built into DNS handle this synchronization, but common DNS issues can arise when name servers have different records due to failed updates or outdated information.<br>
+
+So, to finish this lecture, let's close the last subtopic by stating that the A and AAAA records in name servers are called glue records because they're the glue that holds the DNS system together, breaking circular dependencies and making the whole system work. <br>
+![Network Image](image/walking-dns-tree/82.png) <br>
+
+These concepts, delegation of authority, and glue records are what make DNS a truly distributed system, where no single entity needs to manage the entire namespace and different organizations can manage their zones independently while still maintaining a cohesive global DNS system.<br>
+![Network Image](image/walking-dns-tree/83.png) <br>
