@@ -854,3 +854,79 @@ So, to finish this lecture, let's close the last subtopic by stating that the A 
 
 These concepts, delegation of authority, and glue records are what make DNS a truly distributed system, where no single entity needs to manage the entire namespace and different organizations can manage their zones independently while still maintaining a cohesive global DNS system.<br>
 ![Network Image](image/walking-dns-tree/83.png) <br>
+
+## Time to Live - TTL
+
+One of the design goals of the DNS is that it needs to be fast. But how can it be fast when we have so many systems interacting with each other through network calls? <br>
+![Network Image](image/ttl/1.png) <br>
+The answer is that the **DNS uses caching mechanisms** to help with speed. I want to make a quick mention since we haven’t discussed RFCs yet. <br>
+![Network Image](image/ttl/2.png) <br>
+
+RFC 1034 Section 2.2, Design Goals, is where all this foundational information was documented since the 1980s. RFCs, which stands for Requests for Comments, are numbered documents that outline specifications, standards, and best practices related to Internet protocols and technologies. <br>
+
+![Network Image](image/ttl/3.png) <br>
+![Network Image](image/ttl/4.png) <br>
+
+Since DNS is both a distributed system and a protocol, it has its own dedicated RFC.<br>
+![Network Image](image/ttl/5.png) <br>
+
+I highly suggest spending time to get comfortable with these documents or, at the very least, make a habit of fact-checking against these primary resources when learning or researching anything related to DNS or even other protocols with RFC document specifications.
+[RFC Link](https://datatracker.ietf.org/doc/rfc1034#section-2.2)<br>
+
+For those that are not very familiar with the concept of cache and caching, let’s think about it using our previous detective analogy.<br>
+
+Imagine that every time one of the detectives resolves a case, he writes all the clues in his notebook. So, next time someone hires a detective to resolve a case he has already resolved, a.k.a. resolving a DNS query,<br>
+![Network Image](image/ttl/6.png) <br>
+The detective will have readily available information to provide an answer, without having to go through the whole process of walking the DNS Tree, asking the authoritative nameservers for answers. As you can imagine, accessing information from cache significantly reduces the load and traffic that the DNS infrastructure would otherwise go through, which contributes to making the DNS fast.<br>
+
+Looking at the diagram presented on screen, we have a more accurate technical representation of many of the actors that play a role in the DNS resolution process, which is a way to evolve or elaborate further on our simple detective analogy that we’ve been using so far.<br>
+![Network Image](image/ttl/7.png) <br>
+
+This takes us towards a more technical mental model of how the DNS resolution process actually works. Going over the diagram, from the inside out, and I want you to pay attention to this as **this is very important**.<br>
+
+Everything starts on our personal device, on the far left. Whether it's our computer, phone, smart TV, etc., any device capable of connecting to the internet will inherently be able to perform DNS queries and get responses. <br>
+
+Going from left to right, you can see that an application or program within the device will make a DNS request, and then there's a stub resolver, which is a DNS client program that's built into most operating systems. In Linux systems, the stub resolvers can be traced by using the getaddrInfo() system call.<br>
+
+Its main responsibility is to forward the request to a recursive resolver as it can't perform queries to the name servers directly.
+
+But moving to the right, we have that before talking to any public recursive resolvers, we go through our router's resolver, which is often known as a forwarding resolver. <br>
+![Network Image](image/ttl/8.png) <br>
+
+After leaving our home network towards the internet, we then talk to a recursive resolver, a.k.a. the agents we've been using as examples throughout this section.<br>
+![Network Image](image/ttl/9.png) <br>
+
+And finally, we get to ask questions to the name servers, starting on the Root Zone and then to the Top-Level Domain, and then finally on the second, third, fourth-level domain, or whatever corresponds to the DNS query we are performing. <br>
+![Network Image](image/ttl/10.png) <br>
+
+
+The DNS is a concept called TTL, or Time-to-Live, which is a number that specifies how long a domain record will remain in cache before checking if there's been any update to the domain name.
+
+A change can be anything from adding records like CNAME records, A records. changing the start of authority information, changing name servers, or even deleting the domain name.
+
+Using a dig command to KodeKloud.com, we can observe a 300 number in the answer section next to the domain name.<br>
+![Network Image](image/ttl/11.png) <br>
+
+That 300 is the number of seconds that the DNS record is meant to be cached. Think about it like an expiration timer on a detective's notebook.
+
+After 300 seconds, which is 5 minutes, the information is considered expired, and the detective needs to go through the process of asking the authoritative nameservers again.<br>
+![Network Image](image/ttl/12.png) <br>
+To get current information about the domain name. This TTL mechanism is important because if the TTL is too long, changes to the DNS records might take too long to propagate across the Internet. If it's too short, we may lose the performance benefits of caching, since resolvers need to query the authoritative nameservers more frequently.<br>
+![Network Image](image/ttl/13.png) <br>
+
+In our KodeKloud.com example, all three A records have the same TTL of 300 seconds, but different records for the same domain could have different TTL values, depending on how frequently the administrators expect those records to change. <br>
+![Network Image](image/ttl/14.png) <br>
+
+Now, in previous lectures, we've focused only on what happens on the public side of the DNS, meaning the recursive resolvers and nameservers. Now, we are evolving our mental model of this design by introducing some of the levels of detail of what happens in our private networks when we need to resolve DNS queries. <br>
+![Network Image](image/ttl/15.png) <br>
+
+The reason why we are introducing this evolved design in this lecture is because sometimes the TTL value specified in the DNS records is not honored by some applications.<br>
+![Network Image](image/ttl/14.png) <br>
+
+Caching is a relatively simple concept on the surface, but it can be complex when thinking about how multiple clients that participate in the DNS resolution process have different rules and cache implementations. <br>
+![Network Image](image/ttl/16.png) <br>
+
+Observing the diagram shown on the screen, you can see that within the device section, we have the operating system and then multiple soft classifications of entities, including applications, programs, or services running at the operating system level,<br>
+![Network Image](image/ttl/17.png) <br>
+
+meaning some programs or applications handle their cache independently to the TTL value from a DNS record. If you've ever been through a situation where you're pointing a domain name, for example, while also trying to access the same domain name through a browser and you get different responses, for example, ping response correctly or successfully, but the browser won’t resolve the domain name. This is why they both have their own timing for cache to expire. In one of the last lectures in this course, we discuss more on clearing DNS cache when resolving DNS issues
