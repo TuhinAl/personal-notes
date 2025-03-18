@@ -930,3 +930,87 @@ Observing the diagram shown on the screen, you can see that within the device se
 ![Network Image](image/ttl/17.png) <br>
 
 meaning some programs or applications handle their cache independently to the TTL value from a DNS record. If you've ever been through a situation where you're pointing a domain name, for example, while also trying to access the same domain name through a browser and you get different responses, for example, ping response correctly or successfully, but the browser won’t resolve the domain name. This is why they both have their own timing for cache to expire. In one of the last lectures in this course, we discuss more on clearing DNS cache when resolving DNS issues
+
+## Zone Transfer
+In this video, I want to talk about a concept known as zone transfer, which is the mechanism that nameservers use to stay in sync. <br>
+![Network Image](image/zone-transfer/1.png) <br>
+
+Throughout this course, we've compared authoritative nameservers to a database in the sense that nameservers store data that can be queried, for which they will return a response.<br>
+![Network Image](image/zone-transfer/2.png) <br>
+
+Turns out that nameservers also follow system design philosophies similar to databases. The following concepts are all tied to the DNS design goals of being fast, reliable, fault-tolerant, and scalable. In database system design, there's a concept called sharding, which can be explained as a way to split a large amount of data across multiple servers.
+
+Instead of having one huge server trying to handle everything, we break the data into smaller pieces, and each server handles its own piece.
+
+In DNS, this means splitting domain records across different zones. Instead of one server holding all domain records for the entire Internet, the DNS splits domains into zones. Each zone is managed by different nameservers. For example, some nameservers only need to know about com domains.
+
+
+
+
+
+while org nameservers handle org domains. This sharding continues down. Amazon.com nameservers only need to handle amazon.com records, not walmart.com records.
+
+This way, no single server needs to handle the entire internet's DNS traffic. So in other words, nameservers borrow from databases,
+
+not only from their purpose of providing answers to queries, but in their design as well. When the datasets grow too large,
+
+it’s better if we split the data across multiple servers, as we do in the DNS. Each server handles just a portion of the data,
+
+making the system more manageable and faster. DNS works the same way, by sharding the domain namespace into zones, each managed by different nameservers.
+
+Also, as we've mentioned earlier, in the DNS, there should be at least two or more nameservers assigned to a zone.
+
+This is for redundancy and availability. Each zone has multiple nameservers, because if there were only one, and it failed, the entire domain would become unreachable.
+
+
+
+
+By having nameservers in different networks and locations, the domain stays available even if an entire network region goes down.
+
+Every zone must have multiple nameservers for redundancy. When a record needs to be updated, it first goes to the primary nameserver.
+
+Then, a replication mechanism called zone transfer ensures all other nameservers receive these updates. A quick parenthesis, I recommend taking notes on what zone transfer means,
+
+as there is also something called domain transfer, and there’s another concept called delegation of authority, and they all mean different things.
+
+Take notes on each, to keep their meanings well categorized. Anyway, the nameservers follow a leader-follower architecture, and we can find out which one is the primary nameserver for a zone
+
+by checking the start of authority record. Using dig and requesting the NS records reveals all of the nameservers designated for that zone.
+
+When we update a record in our zone, say for example, we change the A records to point our domain to a new IP address,
+
+
+
+
+
+
+the data first goes into the primary nameserver.
+
+Then, the process of zone transfer will ensure the rest of the secondary nameservers stay in sync.
+
+Modern DNS providers like Cloudflare and AWS Route 53 handle the zone transfer through their own proprietary mechanisms. When you update a DNS record,
+
+the nameservers quickly get the updated information, usually within seconds, and I would say, nowadays it’s just a given that this mechanism will work fine.
+
+However, many DNS operators, especially those managing top-level domains like .com or .net, use traditional replication methods called AXFR and IXFR.
+
+AXFR copies all zone data to a secondary nameserver. Think of it as the special agents sharing the full authoritative data,
+
+like the complete case files, with other agents in their organization. When a new nameserver is added to the zone, it knows nothing.
+
+It needs a complete copy of all records. That’s when AXFR is used. In IXFR, the secondary nameserver actively checks with the primary nameserver.
+
+
+to see if anything has changed. It does this by looking at the zone's version number, called a serial number.
+
+If the primary has a higher number, the secondary requests just the changes that happened since its last update. So it's a pull system.
+
+The secondary nameserver requests the changes. The primary doesn't push them automatically. This is more efficient because each secondary can request updates
+
+on its own schedule, and only when it needs them. This is similar to how database replicas work. They periodically check the primary database for changes
+
+rather than pushing updates to every replica. This course won't contain more details of AXFR and IXFR for now. But as a summary, remember that zone transfer refers
+
+to the process of replicating DNS records across nameservers. First, the records originate on the primary nameserver, and then the data is replicated to the others.
+
+
