@@ -938,55 +938,59 @@ In this video, I want to talk about a concept known as zone transfer, which is t
 Throughout this course, we've compared authoritative nameservers to a database in the sense that nameservers store data that can be queried, for which they will return a response.<br>
 ![Network Image](image/zone-transfer/2.png) <br>
 
-Turns out that nameservers also follow system design philosophies similar to databases. The following concepts are all tied to the DNS design goals of being fast, reliable, fault-tolerant, and scalable. In database system design, there's a concept called sharding, which can be explained as a way to split a large amount of data across multiple servers.
+Turns out that nameservers also follow system design philosophies similar to databases.<br>
 
+The following concepts are all tied to the DNS design goals of being fast, reliable, fault-tolerant, and scalable.<br>
+![Network Image](image/zone-transfer/3.png) <br>
+In database system design, there's a concept called sharding, which can be explained as a way to split a large amount of data across multiple servers.<br>
+![Network Image](image/zone-transfer/4.png) <br>
 Instead of having one huge server trying to handle everything, we break the data into smaller pieces, and each server handles its own piece.
 
-In DNS, this means splitting domain records across different zones. Instead of one server holding all domain records for the entire Internet, the DNS splits domains into zones. Each zone is managed by different nameservers. For example, some nameservers only need to know about com domains.
+In DNS, this means splitting domain records across different zones.<br>
+![Network Image](image/zone-transfer/5.png) <br>
+Instead of one server holding all domain records for the entire Internet, the DNS splits domains into zones.<br>
+![Network Image](image/zone-transfer/6.png) <br>
+Each zone is managed by different nameservers.<br>
+![Network Image](image/zone-transfer/7.png) <br>
+For example, some nameservers only need to know about com domains.
 
+while org nameservers handle org domains.<br>
+![Network Image](image/zone-transfer/8.png) <br>
+This sharding continues down. Amazon.com nameservers only need to handle amazon.com records, not walmart.com records.<br>
+![Network Image](image/zone-transfer/9.png) <br>
 
+This way, no single server needs to handle the entire internet's DNS traffic. So in other words, nameservers borrow from databases, not only from their purpose of providing answers to queries, but in their design as well.<br>
+![Network Image](image/zone-transfer/10.png) <br>
 
+When the datasets grow too large, it’s better if we split the data across multiple servers, as we do in the DNS.
+![Network Image](image/zone-transfer/11.png) <br>
+Each server handles just a portion of the data, making the system more manageable and faster. DNS works the same way, by sharding the domain namespace into zones, each managed by different nameservers.
 
+Also, as we've mentioned earlier, in the DNS, there should be at least two or more nameservers assigned to a zone. This is for redundancy and availability.<br>
+![Network Image](image/zone-transfer/12.png) <br>
 
-while org nameservers handle org domains. This sharding continues down. Amazon.com nameservers only need to handle amazon.com records, not walmart.com records.
-
-This way, no single server needs to handle the entire internet's DNS traffic. So in other words, nameservers borrow from databases,
-
-not only from their purpose of providing answers to queries, but in their design as well. When the datasets grow too large,
-
-it’s better if we split the data across multiple servers, as we do in the DNS. Each server handles just a portion of the data,
-
-making the system more manageable and faster. DNS works the same way, by sharding the domain namespace into zones, each managed by different nameservers.
-
-Also, as we've mentioned earlier, in the DNS, there should be at least two or more nameservers assigned to a zone.
-
-This is for redundancy and availability. Each zone has multiple nameservers, because if there were only one, and it failed, the entire domain would become unreachable.
-
-
-
+Each zone has multiple nameservers, because if there were only one, and it failed, the entire domain would become unreachable.<br>
+![Network Image](image/zone-transfer/13.png) <br>
 
 By having nameservers in different networks and locations, the domain stays available even if an entire network region goes down.
 
-Every zone must have multiple nameservers for redundancy. When a record needs to be updated, it first goes to the primary nameserver.
+Every zone must have multiple nameservers for redundancy. When a record needs to be updated, it first goes to the primary nameserver.<br>
 
-Then, a replication mechanism called zone transfer ensures all other nameservers receive these updates. A quick parenthesis, I recommend taking notes on what zone transfer means,
+Then, a replication mechanism called zone transfer ensures all other nameservers receive these updates.<br>
+![Network Image](image/zone-transfer/14.png) <br>
 
-as there is also something called domain transfer, and there’s another concept called delegation of authority, and they all mean different things.
+A quick parenthesis, I recommend taking notes on what zone transfer means, as there is also something called domain transfer, and there’s another concept called delegation of authority, and they all mean different things.<br>
+![Network Image](image/zone-transfer/15.png) <br>
 
-Take notes on each, to keep their meanings well categorized. Anyway, the nameservers follow a leader-follower architecture, and we can find out which one is the primary nameserver for a zone
+Take notes on each, to keep their meanings well categorized.<br>
+![Network Image](image/zone-transfer/16.png) <br>
 
-by checking the start of authority record. Using dig and requesting the NS records reveals all of the nameservers designated for that zone.
+Anyway, the nameservers follow a leader-follower architecture, and we can find out which one is the primary nameserver for a zone by checking the start of authority record. Using dig and requesting the NS records reveals all of the nameservers designated for that zone.<br>
+![Network Image](image/zone-transfer/17.png) <br>
 
 When we update a record in our zone, say for example, we change the A records to point our domain to a new IP address,
-
-
-
-
-
-
-the data first goes into the primary nameserver.
-
-Then, the process of zone transfer will ensure the rest of the secondary nameservers stay in sync.
+the data first goes into the primary nameserver. Then, the process of zone transfer will ensure the rest of the secondary nameservers stay in sync.<br>
+![Network Image](image/zone-transfer/18.png) <br>
 
 Modern DNS providers like Cloudflare and AWS Route 53 handle the zone transfer through their own proprietary mechanisms. When you update a DNS record,
 
