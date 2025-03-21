@@ -471,7 +471,7 @@ KodeKloud.com decided to migrate the engineering service to a different company,
 ![Network Image](image/domain_zones/28.png) <br>
 So you can see here, if I type it in, it is not in a different zone, right? It’s in the same zone as KodeKloud.com, same as labs and so on and so forth. For them to be in different zones, just to finalize this demo lecture, I want to show you what the process would be, at least from the Route 53 perspective. What they would need to do is like right now, they probably have the `engineer.kodekloud.com` as a subdomain record. And then they’ll probably have some A records pointing to it. Yeah, so it’ll be something similar to this just to play around with it. They’ll have something like engineer@kodekloud.com. I’m obviously not going to save this right now, but it’ll be like adding an A record and then they’ll be basically pointing.<br>
 
-## DNS as a System:
+# DNS as a System:
 
 
 ## DNS - System or Protocol?
@@ -992,29 +992,108 @@ When we update a record in our zone, say for example, we change the A records to
 the data first goes into the primary nameserver. Then, the process of zone transfer will ensure the rest of the secondary nameservers stay in sync.<br>
 ![Network Image](image/zone-transfer/18.png) <br>
 
-Modern DNS providers like Cloudflare and AWS Route 53 handle the zone transfer through their own proprietary mechanisms. When you update a DNS record,
-
-the nameservers quickly get the updated information, usually within seconds, and I would say, nowadays it’s just a given that this mechanism will work fine.
+Modern DNS providers like Cloudflare and AWS Route 53 handle the zone transfer through their own proprietary mechanisms.
+<br>
+![Network Image](image/zone-transfer/19.png) <br>
+When you update a DNS record, the nameservers quickly get the updated information, usually within seconds, and I would say, nowadays it’s just a given that this mechanism will work fine.
 
 However, many DNS operators, especially those managing top-level domains like .com or .net, use traditional replication methods called AXFR and IXFR.
 
-AXFR copies all zone data to a secondary nameserver. Think of it as the special agents sharing the full authoritative data,
+AXFR copies all zone data to a secondary nameserver. Think of it as the special agents sharing the full authoritative data, <br>
+![Network Image](image/zone-transfer/20.png) <br>
 
-like the complete case files, with other agents in their organization. When a new nameserver is added to the zone, it knows nothing.
+like the complete case files, with other agents in their organization. When a new nameserver is added to the zone, it knows nothing. It needs a complete copy of all records. That’s when AXFR is used.
 
-It needs a complete copy of all records. That’s when AXFR is used. In IXFR, the secondary nameserver actively checks with the primary nameserver.
-
-
-to see if anything has changed. It does this by looking at the zone's version number, called a serial number.
+ In IXFR, the secondary nameserver actively checks with the primary nameserver. to see if anything has changed. It does this by looking at the zone's version number, called a serial number.
 
 If the primary has a higher number, the secondary requests just the changes that happened since its last update. So it's a pull system.
 
-The secondary nameserver requests the changes. The primary doesn't push them automatically. This is more efficient because each secondary can request updates
+The secondary nameserver requests the changes. The primary doesn't push them automatically. This is more efficient because each secondary can request updates on its own schedule, and only when it needs them. This is similar to how database replicas work. They periodically check the primary database for changes rather than pushing updates to every replica. <br>
+![Network Image](image/zone-transfer/21.png) <br>
+This course won't contain more details of AXFR and IXFR for now. But as a summary, remember that zone transfer refers to the process of replicating DNS records across nameservers. First, the records originate on the primary nameserver, and then the data is replicated to the others.
 
-on its own schedule, and only when it needs them. This is similar to how database replicas work. They periodically check the primary database for changes
+## Root Servers and Anycast
 
-rather than pushing updates to every replica. This course won't contain more details of AXFR and IXFR for now. But as a summary, remember that zone transfer refers
+So far in this course, we've established that the domain resolution process starts on the root zone. Another detail we've uncovered through commands like dig +trace is that there are only 13 root name servers. I promise you that we will explore why there are 13 root name servers later in the course, but the focus of this demo is on understanding how these 13 servers manage to handle the entire Internet's DNS traffic without becoming overwhelmed. 
 
-to the process of replicating DNS records across nameservers. First, the records originate on the primary nameserver, and then the data is replicated to the others.
+Think about this, 13 servers handling DNS queries from every single device connected to the Internet worldwide. The numbers are massive when you think about all the queries happening every second. So how is it possible that only 13 root name servers are capable of handling so much load? The answer is that this is possible thanks to a network design called Anycast. What Anycast does is it allows multiple physical servers to share the same IP address. To show you exactly what I mean, I am going to open rootservers.org website
 
 
+and then I'm going to zoom into a random location in the map. Probably Mexico because I'm from Mexico. And so in the central region, we have two locations with root servers, one in Mexico City and the other in Querétaro. If we click on Querétaro, we see that this geographical place hosts root name servers E, C, K, D, and F in a data center.
+
+Clicking on Mexico City, we have E, E, I, F, and D. This is interesting that the E server appears twice in this region, right? Let's click on the server here and check that the IPv4 address begins with 192 and ends with 230.10. The other one over here is the same, and the one in Querétaro has the same exact IP address. If we compare the IPv6, we can see it matches as well. Same is true for the F server, and so on. If we zoom out, we can see that there are many data centers announced in this map. There are many more in the United States, and there are regions with more than a few root servers like this place here close to Washington.
+
+
+If we check the IPs from any of the A records, they're all the same. Take a look. Now, to understand Anycast, think about it as a distributed system that allows multiple machines with the same IP addresses to share compute resources to help with a huge traffic load by strategically positioning the servers in multiple locations to also help find the nearest location.
+
+We get to interact with a root nameserver based on proximity thanks to a network protocol called BGP, or Border Gateway Protocol, which uses an algorithm to decide the fastest route to an internet location based on multiple considerations. I highly suggest you go check on YouTube.
+
+There are some very interesting videos on BGP that are worth checking as BGP is a very important concept. Anyway, that's it for this demo. In the next lecture, we will take a look at another DNS distributed design called GeoDNS. I want to put forward that Anycast and GeoDNS are different.
+
+Anycast uses the closest proximity method through network routing, while GeoDNS makes routing decisions by looking at information like our subnet location to figure out where you are connceting from.
+
+
+
+
+
+## GeoDNS
+Throughout this section, we've explored the DNS resolution process, from nameservers managing different zones to resolvers acting as our DNS detectives caching results. But being that the Internet is a worldwide system serving billions of users, we're missing a crucial piece known as GeoDNS. GeoDNS is a technology that helps analyze the origin IP address of a DNS request to determine the user's location and route the request to the most appropriate server.
+
+This service is provided by modern DNS providers like Cloudflare or Amazon's Route 53. GeoDNS implementations consider multiple factors, like geographical proximity,but also the status of the service you're being directed to. Let's examine these factors one by one. First, let's talk about geographical distribution. In global distributed systems, there's something called CDN, which means content delivery network. Think of a content delivery network as a McDonald's restaurant chain for a moment.
+
+
+
+McDonald's doesn't have just one restaurant serving the entire world from one location. Instead, they have thousands of restaurants worldwide, each serving their local community. Similarly, companies like Akamai provide these content delivery network services, maintaining servers across the globe that store cached copies of frequently accessed content.
+
+This infrastructure enables faster access to popular websites, applications, and services, regardless of where users are located. The second factor is server health and operational status.When you type an address like KodeKloud.com, GeoDNS ensures you won't be directed to a server that's down or malfunctioning, because it constantly performs health checks on all available servers. Even if you have a server physically close to the user, that server might be experiencing issues or could be under heavy load. In these cases, GeoDNS will route traffic to the next best available option.
+
+It's like if your nearest McDonald's is temporarily closed for maintenance, you'd rather drive a bit further to get your meal than arrive at a closed restaurant. This ensures users are always directed to servers that are actually capable of handling their requests, maintaining service reliability and performance. Remember at the beginning of this section we explained that DNS is both a distributed system and a protocol. When we talk about the format of a DNS request or its response,
+
+we're talking about the DNS protocol, and GeoDNS uses the structure of the DNS request to understand how to direct the traffic to the nearest infrastructure thanks to a special value that's included in the DNS requests. I want to make a parenthesis to say that, when DNS was created back in the day, the internet wasn't what it is today, but the people in charge of creating the DNS
+
+decided it may be a good idea to keep some unused bits in its request-response structure in case things evolved. As the internet grew, an extension for the DNS protocol, known as EDNS, was created, and within these extensions, there's a value or field with information about something called the client subnet that tells nameservers where requests are coming from. This is crucial. Without this subnet information, a user in Thailand, for example,
+
+might end up talking to resolvers from someplace in America, thus getting responses that aren’t optimized for his location. We'll examine DNS requests and responses in detail in the next section, but for now, understand that this extension was fundamental in making GeoDNS work effectively. It gives nameservers visibility into where queries truly originate, not just which resolver is asking. We have a lecture that talks about EDNS in the next section, but for now,
+
+
+Let's imagine a person from Sweden wants to watch Netflix, so they type netflix.com. What happens here is that this request first hits their DNS resolver, which might be their ISP’s resolver, or possibly Google’s resolver, at 8.8.8.8. Thanks to that special value we talked about earlier in the DNS request,
+
+Netflix’s nameservers can see this request is coming from a Swedish network. Now, Netflix has multiple servers across Europe. They might have some in Stockholm, some in Amsterdam, and others in Frankfurt. When their GeoDNS system sees this request coming from Sweden, it doesn’t just automatically pick the Stockholm servers because they’re closest. Instead, it looks at several things. First, it checks which of these European servers currently have capacity to handle more streaming.
+
+Then it looks at which ones have good network conditions. Maybe the Stockholm servers are having some network congestion right now. It also checks which servers already have the most popular Swedish content cached and ready to serve. GeoDNS uses a load balancing strategy to make these decisions of which server may give the best streaming experience at the moment. I wanted to make sure we covered GeoDNS as Its very Import in todays internet.
+
+
+# DNS as a Protocol
+
+## DNS as a Protocol
+DNS as a protocol is about understanding the format of the requests, the responses, and other rules and nuances around the way DNS behaves. A good mental model to learn these concepts is that DNS is a network protocol. As you may know, the word protocol is used to define rules and contracts for an entity to follow. In computer networking, we have multiple protocols like TCP or UDP, which help define standards of how a device should communicate with another device.
+
+It's like establishing a mutual set of rules so network-connected devices can know what type of data to expect and how to respond to said data. For me, it was a big help to understand that. In DNS, everything runs either in TCP or UDP, so keep this in mind when thinking about DNS. Now, in relation to network protocols, in case you’re not very familiar with it, I want to establish that protocols have hierarchies, meaning some can be a lower level
+
+
+and others can use the previous rules set by another protocol to add an additional functionality or behavior to the communication contract. These higher-level protocols build upon the basic transport mechanisms to provide specialized services for specific use cases. To better understand these protocol hierarchies, let's start with the basics. At the foundation, we have IP for routing data across the Internet. This means that for any Internet communication to happen,
+
+IP addresses need to be involved to know where to send data. IP works with transport protocols like TCP and UDP for actually sending that data. Think of it like different delivery methods. TCP is like sending packets where the delivery service waits for the recipient to sign and confirm they got each packet before sending the next one, whereas UDP is more like throwing all the packets into the recipient's yard at once, not caring if they actually got them all. It's crucial to understand the differences between TCP and UDP, as both are foundational protocols for network communication,
+
+so I’ll elaborate more on the explanation before moving on. The TCP way of doing things is achieved through packet IDs and acknowledgments.
+
+When sending data over the Internet, if the data is larger than what can fit in a single packet, TCP divides it into smaller packets, each with an ID so they can be put back together in the right order. While TCP packets can theoretically be up to 65,535 bytes, in practice they’re usually limited to around 1,500 bytes because of something called MTU, Maximum Transmission Unit, which is basically how much data Ethernet networks can handle in a single frame. If the data is small enough to fit in one packet, it’ll just send it as is, but TCP still uses what we call an ACK, or acknowledgment, to confirm the data made it to its destination. This acknowledgment system is what makes TCP reliable. The sender knows for sure if their data arrived.
+
+Otherwise, the file won't open, as bits of its data may be missing or incorrect. UDP, on the other hand, just sends data packets
+
+without waiting for any confirmation that they arrived. The receiver just processes packets as they arrive, in whatever order they come in.
+
+This makes UDP much faster than TCP but less reliable. UDP is used for live streaming and gaming, for example,
+
+where speed matters more than perfect delivery. If you miss a few frames in a video call or a game, the stream just continues and you might see a brief freeze. But as the transmission is live, it can't really wait for things to be acknowledged. Originally, DNS was designed to use UDP with a strict 512-byte limit for its packets. This limit wasn't random. It was chosen because the IPv4 standard specified that
+
+
+every host must be able to handle packets of 576 bytes or less. Since IP headers could be up to 60 bytes and UDP headers were 8 bytes, staying under 512 bytes for the actual DNS data meant the total packet would always fit. Remember how in a previous lecture we talked about DNS having exactly 13 root servers? Well, this is exactly why. It's the maximum number that could fit in a single 512-byte response. This is because the server name itself would add about 20 bytes, times 13.
+
+This means 260 bytes just for the names. So considering the rest of the fields displayed on the screen, this makes up for about a total of 512 bytes. These days we have something called extended DNS, which we will cover in another video. But this extended DNS capability enables handling much larger UDP packets, which makes sense since modern networks and computers can easily handle bigger packets now. We're not in the 1980s anymore.
+
+Plus, we needed this capability because of other newer features like DNSSEC, which have been included in the DNS protocol in an attempt to make the DNS more secure. These security features add more information to DNS responses, making them naturally bigger than 512 bytes. We'll go over the basics of DNSSEC in another video in this section.
+
+The only downside is that this ability to send larger responses has made DNS servers attractive for amplification attacks, where bad actors can use DNS to generate a lot of traffic.
+
+But anyway, the key point here is that these basic protocols provide different ways to move information, and other protocols can build on top of them to add their own rules and features. Now, when talking about how protocols stack, or sit on top of each other, think about the following. We just defined that TCP and UDP are two protocols that use IP addressing and routing to operate. As technologies evolve, new requirements emerge for how devices and software need to communicate. I'm going to use HTTP as an example to explain this.
