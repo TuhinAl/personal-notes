@@ -1183,4 +1183,381 @@ It will also use HTTPS encryption mechanisms like SSL or TLS to secure the data 
 
 The resolvers involved in the query resolution process must have the appropriate public keys to validate DNS signatures in the response. Then, we also have the root and top-level domain key signing ceremonies as part of the process. The public key is used to validate that root and the TLD DNSSEC signatures are managed through a key signing ceremony. These ceremonies are performed by a group of trusted experts who follow strict security measures to generate and store the keys securely. The ceremonies are often recorded and published for transparency. you can find videos of DNS key signing ceremonies on YouTube. 
 
-The purpose of DNSSEC is to prevent attacks where a malicious actor would spoof DNS responses and provide fake or misleading information. This type of attack is known as DNS spoofing or cache poisoning. By implementing DNSSEC, we have a higher level of assurance that the authoritative answer of the query can only be provided by legitimate servers with the appropriate cryptographic keys. DNS messages with DNSSEC enabled will have a larger size due to the extra data involving the keys. When using the DIG command, you can include the PLUS DNSSEC flag. This flag sets a DNSSEC OK bit in the OPT record of the DNS query, indicating that the client is interested in receiving DNSSEC-related records. The flag has a negotiation mechanism. PLOS Node DNSSEC, for example, will perform the query without requesting the DNSSEC records. In AWS Route 53, for example, there is an option to create a hosted zone with DNSSEC enabled when registering a domain. This feature
+The purpose of DNSSEC is to prevent attacks where a malicious actor would spoof DNS responses and provide fake or misleading information. This type of attack is known as DNS spoofing or cache poisoning. By implementing DNSSEC, we have a higher level of assurance that the authoritative answer of the query can only be provided by legitimate servers with the appropriate cryptographic keys. DNS messages with DNSSEC enabled will have a larger size due to the extra data involving the keys. When using the DIG command, you can include the PLUS DNSSEC flag. This flag sets a DNSSEC OK bit in the OPT record of the DNS query, indicating that the client is interested in receiving DNSSEC-related records. The flag has a negotiation mechanism. PLOS Node DNSSEC, for example, will perform the query without requesting the DNSSEC records. In AWS Route 53, for example, there is an option to create a hosted zone with DNSSEC enabled when registering a domain.
+
+This feature automates the process of generating and managing DNSSEC keys for your domain. The process of adding DNSSEC keys to your domain involves the following steps. The first thing is key generation. DNSSEC keys are generated for your domain, and these keys are used to digitally sign your DNS data. The second is the key publication, so the public part of the key is published in your DNS zone as a DNS key record. This allows other DNS servers to verify the signatures of your DNS data. Then you have the data signing, so your DNS data, or the resource records, are digitally signed using the zone signing key. The signatures are published in your DNS zone using RRSIG records. Then you have the parent zone interaction, so your domain's parent zone, or the top-level domain, is notified of your DNSSEC keys. This establishes a chain of trust from the roots to your domain. When DNSSEC is enabled for your domain, DNS responses from your domain will include the RRSIG records, which are the digital signatures that authenticate the DNS data.
+
+Resolvers that support DNSSEC will validate these signatures to ensure that the data hasn't been tampered with, and that it originates from a legitimate resource. If the validation succeeds, the resolver knows it can trust the DNS data. If the validation fails, the resolver will treat the response as untrusted and may not return the data back to the client. The DNSSEC topic is vast and would require significant time to get into explaining depth, especially when you get into the technical aspects like the key management and the cryptographic algorithms. I would encourage you to request more information on this topic to be included in the course if it’s within your interests. A summary of this lecture is that the DoT and DoH are protocols used to securely transport DNS messages, and that DNSSEC, on the other hand, is an extension of the DNS protocol that incorporates cryptographic signatures to ensure the authenticity and integrity of DNS responses, protecting against DNS spoofing attacks.
+
+# Record Types
+## DNS Record Types- Introduction
+This part of the course is, for the most part, a practical learn-by-doing section where we will learn some of the common DNS records by actually implementing them in a BIND9 server.
+
+For the demo videos, we are going to have two machines, Node-01 and Node-02. On Node-01, we will set up and configure our BIND9 DNS server.
+
+On Node-02, we will install a web server that we'll use to demonstrate how DNS resolution works in practice. This two-machine setup will help us understand how DNS servers and services work together in the real world. The DNS server we are configuring locally will be able to answer DNS queries but it will not be exposed to the internet. The fundamentals of DNS are the same, minus the distributed system remote communications, but I think having a local server to experiment freely without worrying about breaking anything in production helps a lot.
+
+Alright, let's jump into installing and configuring our DNS server. First thing we need to do is get BIND9 up and running. So I'm going to run this: <br>
+`sudo apt update && sudo apt install bind9 bind9utils bind9-doc -y`<br
+command. Ok, so it’s installed. Let’s check if the service is running. The service is not running, so let’s start it. Checking the status again. Perfect, now the service is running.
+
+## SOA and NS Records
+Now that we have our DNS service running, we want to create a zone called my.kodekloudlab.com, and here’s where things get interesting. To create a zone, we first need to modify a BIND9 configuration file to let our service know how many zones we are going to have configured in this server, and where to find each zone file. For this demo, we are configuring just one zone file and the configuration file to indicate this zone file is in the etc BIND9 directory, and the file name is named.conf.local. So I’m going to edit this file using vim. See that it has some comments pre-populated by default? I’m going to get rid of the contents of the file by entering vim command mode by typing a colon, and then the following command. One, and then a comma, and then dollar symbol, then D, and then I’m going to press enter, and the contents are gone. Now, first thing I’m going to do is I’m going to type the zone name, which will be `my.kodekloud.com`.
+
+Inside of the curly braces, there will be two arguments here. The type and the location of the zone file we will be configuring next. The type we are picking indicates that this is a primary DNS server for this zone. Remember, in DNS, there should always be two nameservers for redundancy, but for simplicity in this exercise, we are configuring just one. Okay, so we have the file. Let's save it. Okay, now that it's saved, let's create the zone file.
+
+The zone file is also in the etc bind directory, but the name of the zone file, by convention, will start with DB, and then dot, and then our domain apex that indicates the start of the zone. In this case, my.kodekloudlab.com. We will populate our zone file with some mandatory values first. The TTL 300 sets the default time to live in seconds for every record in the zone, telling resolvers how long to cache responses.
+
+Now on to the start of authority record, or SOA. This at symbol to the left of the SOA record represents the zone's apex domain in the syntax, so we are saying that my.kodekloudlab.com has an SOA record of ns1.my.kodekloudlab.com. So this line defines the start of authority record, specifying that ns1.kodekloudlab.com is the primary name server for this zone. The second field, admin.my.kodekloudlab.com, is actually an email address with the at symbol replaced by a dot, so if it were a normal email, it would be admin@my.kodekloudlab.com. That's how SOA records store contact information in the zone files.
+
+The numbers in parentheses are the serial number which increments with each zone file change. Hopefully, I'll remember to increment the number every time we make a change to the zone file during this demo. The refresh interval means how often secondary DNS servers will check for updates. The retry interval is how long they wait to try again if the refresh fails.
+
+The expire interval is when secondary servers should discard the data if no successful refresh occurs. And the negative caching TTL is for how long resolvers will cache a nonexistent domain or other negative responses.
+
+So for example, if there's a domain that didn't exist and this value is set for, let's say, 5 hours, and then you register that domain just 5 minutes after, it may take the full 5 hours until a resolver will attempt to check if this domain exists again.
+
+And we have a lecture about negative caching in TTL where we explain this more in depth. So this whole block is the SOA record.
+
+Now we need the NS records. For this, we use the add symbol again to indicate the APEX domain again, followed by the IN NS and the hostname of the nameserver. This tells resolvers that ns1.kodekloudlab.com is the authoritative name server for this zone. This is meant to help queries arrive at the correct destination, which is the name server, with the authority to give answers for this zone's domain name.
+
+This NS record in combination with the SOA completes the definition of which server holds the authoritative data for my.kodekloudlab.com.
+
+So this SOA and NS records along with the TTL gives us the basic framework for our DNS zone file.
+
+So now we save the file and exit. Now, even though this gives us the basic framework for our DNS zone file, if we query the domain,
+
+for example using dig pointing to the localhost because here's where the nameserver is, and then my.kodekloudlab.com, it won't respond fine because the nameserver we declared doesn't yet have a glue record pointing to an actual IP.
+
+This causes a query to get lost since it doesn't know where to find the ns1.kodekloudlab.com name server. In the next lecture, we'll see how to add the glue record ensuring the name server can be found and our local DNS server will respond correctly after this.
+
+## Glue Records
+Ok, so we are trying to reach our nameserver but the query is getting lost. We need a glue record to give our dig command the nameserver's IP address so it knows exactly where to go and how to find the nameserver.
+
+Let's edit the zone file again. So we are going to add this line. This line tells DNS that our nameserver, which is ns1.microcloudlab.com, is at 127.0.0.1.
+
+Remember, this only works if we query from node-01 because 127.0.0.1 is the local loopback IP address. In a real setup, you'd need to use a valid IP address for your nameserver.
+
+We should also increment the SOA Serial to 2, or any higher number than what it currently has since we changed the zone file, ok?
+
+Let's see if we keep remembering this as we keep adding changes. Ok, so we are going to reload by 9.
+
+Now let's run our query. This time it returns no error instead of the NXDOMAIN, proving the Glue Records is working.
+
+## A and AAAA Records
+Okay, so this video is about the A and AAAA records. In this demo, we are just going to configure the A records.
+
+AAAA records is essentially the same, but with an IPv6 IP address. As covered earlier, an A record maps domain names to IPv4 addresses, while the AAAA record maps domain names to IPv6 addresses. In DNS packets, an A record's address field is 4 bytes long, whereas a Quad A record's address field is 16 bytes, and the packet's header includes flags identifying each record type. Okay, so let's find the IP address for node 02, so that we can add the A record.
+
+So I'm pinging node 02 to see what the IP address is, it's going to be different for each playground session.
+
+Okay, so this is the IPv4 address, I'm copying it, and now I'm going to edit the zone file again.
+
+Let's add this line at the bottom that maps the node 02 host to its IP address. Now let's restart BIND9.
+
+Let's try it out like this, since we are specifying that the A record belongs to a node 02, it has been taken as a subdomain, we can see that it's working. However, thinking about it, I think we shouldn't create this in a subdomain format.
+
+Ideally, we want our Apex domain, in this case, my.kodekloudlab.com, to have a mapping to node 02 host, because next we intend on deploying a web server there, and it'll be nice if we can just hit the domain Apex and be able to consume the service exposed by the web server.
+
+To do this, we use the at symbol instead of the node 02 to indicate that we want our Apex domain to respond with the A record when queried. Ok, so we are going to restart by BIND9 again, and let's try the query to the Apex domain.
+
+Ok, so it's working. Configuring the AAAA record involves the same exact steps, but I'll skip it due to virtual environment constraints.
+
+Now we have a clear mental map of how a nameserver resolves the IP address of a machine by resolving its domain name, Next we are going to configure the CNAME record.
+
+
+## CNAME Records
+
+Okay, so this is my favorite part. We are going to configure a CNAME record in this video. And so, basically, CNAMEs are short for canonical name.
+
+And they're a type of record that points to another domain name. Meaning, CNAMEs cannot point to other IP addresses, for example.
+
+Also, CNAMEs cannot be used to point to the apex domain. It needs to be something different. CNAMEs are often used for www prefixes to indicate that the IP address that the domain name is pointing to is exposing a web service. And that's exactly what we are going to do.
+
+To configure these records, we are going to install Nginx in Node-02 to have a service exposed from there. So I'm going to ssh into Node-02.
+
+And then I'm going to run this apt install nginx. Okay, so we start Nginx. And from here, I should be able to do curl to localhost.
+
+And we should see the HTML page. Okay, it seems that it's working. Now I'm going to SSH back into Node-01.
+
+
+And from here, I'm going to edit the zone file again. And this time, I'm going to add the CNAME record, just like this.
+
+On the left, we have the www, which means that if we hit www.my.kodekloudlab.com, it will be equivalent of getting to the IP address of my.kodekloudlab.com, basically.
+
+Let's not forget to increase the serial number in the SOA record, by the way. Okay, now that we have saved the file,
+
+what I want to do is curl the Nginx service simply by using curl and then www.my.kodekloudlab.com. To make it work, what I'm going to need to do is edit the resolv.conf file.
+
+If you're following along or you do this in any of the KodeKloud playgrounds, make sure you keep a copy of the nameserver that's originally in this file
+
+in case you need to roll back for some reason to redo any of the steps if you made a mistake or something.
+
+
+Because otherwise, you'll have to restart your lab all over because it’s going to be messed up with a nameserver pointing to a localhost IP address.
+
+Okay, so now that I did this, I'm going to restart BIND9 again just to make sure everything’s working. Now, this indicates that we successfully configured our nameserver to resolve the main names in the my.kodekloudlab.com zone.
+
+Another thing I wanted to mention about CNAMEs before I close the video is that in Amazon Route 53, CNAMEs have some unique characteristics as they can point directly to AWS resources like S3 buckets or load balancers through alias records, even at the root of the domain level, which regular CNAMEs can't do.
+
+But I thought it was worth mentioning as it threw me off the first time I saw it. Okay, that’s it for this demo. I hope you enjoyed the walkthrough. Thank you so much.
+
+## Other Recors: TXT, PTR and SRV
+DNS supports other record types with different specific purposes that we haven't covered in the course yet. So in this video, I want to cover the following DNS record types.
+
+We are going to talk about TXT records for storing text information, SRV records for service discovery, and PTR records for reverse DNS lookups.
+
+For TXT records, or text records, we have that they were originally designed to hold human-readable notes in DNS. However, they've evolved to serve many machine-readable purposes too.
+
+To request a text record for a domain, simply use dig and include the TXT record in the request, like the command shown on screen.
+
+Think of TXT records like digital sticky notes that say, Yes, the owner of this domain approves this service. So TXT records will generally be used as a digital badge that proves a domain is authorized to use a certain service, such as 1Password, Google Site Verification, or ensuring that only Google’s mail servers and mail.k8s.io can send emails using the @kubernetes.io addresses.
+
+Here's a high-level explanation of the TXT records returned by kubernetes.io. For the 1Password verification, what this is telling us is that, if an organization like kubernetes.io wants to use a password manager like 1Password, they need to prove they own kubernetes.io.
+
+Think of 1Password like a secure digital vault where organizations store all their passwords, API keys, and other sensitive data. 1Password says, put this specific TXT record on your domain to prove you control it. It's like showing your ID to open a bank account.
+
+You are proving ownership. Now we have two Google verification records here. They were likely generated at different times and for different purposes.
+
+It's like having multiple keys for the same house. One of the keys might be for Google Workspace or Gmail, and the other one for another Google service. It proves domain ownership to Google, which may give kubernetes.io the authority of using this domain name for certain services.
+
+A good example on using a domain name in other services is email. We have this SPF record, which is like saying, only Google mail servers and mail.kubernetes.io can send emails from
+
+at kubernetes.io addresses. SPF means Sender Policy Framework, by the way. The point is that, if a scammer tries to send email pretending to be from kubernetes.io,
+
+but uses their own server, receiving mail servers will check the kubernetes.io DNS and see that this server is not authorized,
+
+making it more likely that the email is placed in the spam folder or something. Without these text records, kubernetes.io couldn’t use these services securely.
+
+They’re like digital ID cards proving domain ownership to each of these services. Moving to SRV records. SRV stands for Service,
+
+and these are DNS records that help with service discovery. By associating SRV records to a domain, other services running on this domain can see them.
+
+and finding them will help them get information on how to find certain machines or applications in the DNS. I see this has been similar to placing pins on your favorite restaurants in Google Maps, for example,
+
+which helps you track and get information on where the restaurant is, when it's open, what kind of food they serve, etc.
+
+SRV records are like digital pins that help systems track where services are running and how to connect to them.
+
+Kubernetes uses SRV records to help pods find and connect to other services across a cluster. When you deploy microservices in Kubernetes,
+
+CoreDNS, which is a cluster's DNS server, will automatically create SRV records. These records are stored in CoreDNS's internal DNS zone files,
+
+which get updated whenever services are created, modified, or deleted through the Kubernetes API server. This is how an SRV record looks like.
+
+Let us know if you'd like us to explore the details of Kubernetes service discovery with SRV records more deeply in another lecture.
+
+Now we have PTR records, which are called pointer records, and these are used for reverse DNS lookups. As we may know, in a regular DNS query,
+
+we are looking to find which IP address is associated with a domain name by passing the domain name in the DNS query.
+
+In a reverse DNS lookup, we look to find the domain name associated with an IP, so we use the -x flag to indicate we are requesting a reverse DNS lookup.
+
+And then we pass an IP address in the query instead of a domain name as we would normally do.
+
+When performing a reverse DNS lookup, the IP address gets automatically reversed and appended to an PTR top-level domain. In the top-level domains lecture,
+
+we explained that there's an RPA top-level domain that exists with the purpose of making reverse DNS lookups possible. So in this video, I want to elaborate more on that thought so that we make it clear how it actually operates.
+
+
+I must begin by reminding you that domain names are read from left to right. The concept of reading the domain names from left to right is what enables walking the DNS tree starting on the Root Zone.
+
+IP addresses, on the other hand, are read from right to left. So to be able to use an IP address to perform a reverse DNS lookup,
+
+we first need to reverse the IP address to make sure the DNS system will be able to read it from right to left.
+
+Then we append the reverse IP address to an RPAT top-level domain and to a root zone by consequence to make the domain name adhere to DNS standards.
+
+So by reversing the IP and appending it to the .arpa top-level domain, we can use the standard DNS walking process which reads the domain names from right to left as we've already explained.
+
+This will help us find the corresponding domain name associated to an IP address. Let's see what happens when we walk the DNS Tree for a reverse DNS lookup.
+In the query, we are performing a reverse DNS lookup to 8.8.8.8. The IP gets reversed and then appended to the PTR top-level domain,
+
+so the domain resolution can be attempted by walking the DNS tree to the address 8.8.8.8.in-addr.arpa and then the dot at the end to symbolize the root zone.
+
+So we begin by asking the root zone for the RPAT top-level domain name servers. We figure that the IN address is a subdomain of RPAT, but they're in the same zone.
+
+We then move to the 8 third-level domain, where we ask for information about this domain name, and this is where we get an authoritative answer.
+
+The authoritative answer includes a PTR record with the value of dns.google. This means that the domain name associated with the 8.8.8.8 IP address is dns.google.
+
+We can prove this by asking dns.google.com for its A records. PTR records are created just like any other DNS record with your hosted zone,
+
+whether you're using a service like Route 53, Cloudflare, or another registrar. It's important to mention that you must own the IP address for which you are creating the record.
+
+In most cases, you'll only want a PTR record for a service that involves using a static IP address. For many common use cases involving web applications, using PTR records may not be the best idea, given how web apps benefit from dynamic IP addresses more so than from a static IP address.
+
+
+## MX Records
+When I was planning this course curriculum, I communicated back and forth with KodeKloud project managers through email, using my personal Gmail account, which I operate directly from a browser.
+
+I want you to imagine that every time I hit reply to an email, because the email I'm replying to has a cochla.com domain,
+
+the following things would happen in the background. Since my email is hosted in Gmail, Google would pick a Gmail mail server to try to deliver the email using SMTP.
+
+The designated Gmail mail server will now be responsible for finding a recipient for the email, which is another mail server somewhere else.
+
+To find the recipient, the Gmail mail server performs a DNS query to cochla.com domain, requesting its MX records. The DNS query returns multiple mail servers,
+
+and one of these servers is chosen to receive the email. The email server then requests its A record. Finally, an IP address for the actual mail servers is retrieved, and this is where the email will be delivered. In the domain name system, MX records are used to point to mail servers
+
+to help an email message reach its destination. The anatomy of an MX record goes as follows. First is a domain name.
+
+This must be a domain you own and control. 300 is a TTL, which means that these records will be cached by DNS servers for 300 seconds or 5 minutes
+
+before they need to check for updates. IN is for Internet Class. This is the standard class for all modern DNS records.
+
+MX is a record type that indicates this is a mail exchange record. In other words, this record will tell DNS which mail servers are responsible
+
+for receiving email for this domain. The numbers like the 10, 5, and 1 show priority level, which I’ll explain soon.
+
+Last is the name of the mail server that will receive the email. While DNS will let you save an MX record pointing to any valid hostname, that hostname must be a real mail server configured with SMTP to receive emails. If not, any messages sent to your domain will fail to deliver and bounce back to the sender.
+
+When adding an MX record to your domain zone file, you would write it like this. This tells email systems that mail.kodekloud.com is a mail server
+
+that will receive email for the kodekloud.com domain. The mail server itself needs its own A record, so other servers can find its IP address.
+
+In practice, most of us will work with MX records directly from a domain registrar's web interface. Most, if not all of them, will have the option to configure MX records.
+
+For example, in Cloudflare, Route 53, or GoDaddy, you simply go to the DNS settings, click Add Record, select MX type, and fill in the priority and the mail server hostname.
+
+Email needs to be reliable, so domains typically have multiple mail servers for backup. This is why MX records use a priority system to direct emails to the best available server.
+
+
+Looking at the kodekloud.com example, we see priorities of 10, 10, 5, and 1. What this means is that the mail server with the lowest number will be tried first, as it has the highest priority. So mail servers will first try to deliver to smtp.l.google.com, which has a priority 1.
+
+If that fails, they’ll try the priority 5 servers. If those fail, they’ll try the priority 10 servers last. When MX records are configured with the same priority,
+
+mail servers will pick one of them in a load-balanced fashion. Some rules around MX records are MX records cannot point to CNAME records.
+
+They must point to hostnames with A or AAAA records. Having no MX records for a domain means email will attempt delivery using the A record,
+
+which is called implicit MX. Each MX record must have a priority value. Of course, there are security considerations around email.
+
+For example, malicious actors could intercept an email while it travels through the Internet or send emails pretending they are coming from your domain by spoofing the sender address.
+
+To protect against these threats, modern email systems use a combination of three main security protocols. First, we have SPF, or Sender Policy Framework.
+
+As mentioned before, these are TXT records that list which mail servers are authorized to send emails from your domain.
+
+When someone receives an email claiming to be from your domain, the mail server checks these SPF records to verify if the sending server is legitimate.
+
+We also have DKIM, or DomainKeys Identified Mail. This adds a digital signature to every email sent from your domain.
+
+The signature is created using a private key that only your mail server knows, and the public key is published in your domain's DNS TXT records.
+
+Receiving mail servers can verify this signature to ensure the email wasn’t tampered with during transit and if it really came from your domain.
+
+We also have DMARC, or Domain-Based Message Authentication Reporting and Conformance. This protocol ties SPF and DKIM together and tells receiving mail servers what to do if an email fails these authentication checks.
+
+DMARC policies, which are also stored in TXT records, can instruct servers to reject suspicious emails outright, quarantine them in spam folders, or just monitor and report failures back to the domain owner. Together, these three protocols form a comprehensive email security framework that helps ensure emails are legitimate and haven't been tampered with. When properly configured, they make it much harder for attackers to successfully spoof emails or conduct phishing attacks using your domain.
+
+
+# Domain Name Lifecycle
+
+## Domain Registration Process
+Throughout the course, we've talked about registering domains and how DNS works in general. In this video, I want to talk about the domain registration process more in-depth.
+
+To make it enjoyable, I'm going to explain the process with three different actors that play crucial roles in this process. First, we have the registrar. This is the company that offers
+
+domain registration services, companies like GoDaddy, Namecheap, or Google Domains. They're like the real estate agents of the internet. Next up is the registrant. That's you, me,
+
+or anyone wanting to register a domain name. If we continue with our real estate analogy from previous lectures, we're the ones looking to get our piece of digital land. And finally,
+
+we have the registry. The registry is the organization that maintains all records for a particular top-level domain. VeriSign, for example, takes care of all .com domains.
+
+They keep the main list of who owns which domain in their territory. One day, our friend the registrant wakes up and decides he needs something special. He's tired of living in his parents domain. Every day, he has to put up with WordPress.com, Medium.com, or GitHub.io as his address. No more, he says. I need my own domain name where I can be independent.
+
+The registrant starts researching. He discovers there's this whole huge business dedicated to selling domain names, and the people that make it possible are called the registrars.
+
+These registrars are like real estate agents of the internet, each with their own special way of doing business. As he digs deeper into this domain world, he learns about the real
+
+powers behind the Domain Name System, the registries. These aren’t your regular businesses. They’re more like territory bosses, each controlling their own piece of the internet.
+
+There’s VeriSign, the biggest boss of them all, controlling the massive .com territory. They process millions of domain transactions daily, keeping their books clean and their
+
+territory under strict control. No domain gets registered in .com without VeriSign knowing about it. Then there's the Public Interest Registry running the .org territory. They're like the more community-focused family, preferring to deal with non-profits and organizations that help people. They run a tight ship too, but with different rules than VeriSign's territory.
+
+Over in the .io territory, you've got the Internet Computer Bureau. They’re the new kids on the block who made it big when tech startups started flooding into their territory. They saw an
+
+opportunity and turned their small island domain into prime internet real estate. In his exploration, he also learns about this huge underground world of domain trading. Some sketchy registrars hide
+
+in the dark corners of the internet, specializing in something called domain snatching. They grab domains the moment they expire, then sell them for huge profits. That's not what I want, thinks the
+
+registrant. I want something legitimate. What the registrant just discovered is a real practice in the domain industry. Companies like DropCatch.com and SnapNames operate vast networks of registrars
+
+specifically to catch expiring domains. They use automated systems to monitor expiration dates and and instantly register valuable domains the moment they become available. Some companies even control hundreds of registrar accreditations just to increase their chances of catching valuable domains. This process of domain snatching is called domain drop catching,
+
+and it happens when domains aren't renewed by their owners. The registries created a system to prevent chaos in their territories. When a domain expires, it goes into something called a redemption
+
+period, a sort of domain name purgatory. Without it, you'd have domain snatchers camping outside their digital offices, waiting to grab expired domains like vultures. In the actual domain name
+
+system, when a domain expires, it goes through several stages. First, a 30-day grace period where the owner can renew normally. Then, a 30-day redemption period where renewal is possible but
+
+costs much more. Finally, a five-day waiting period before it becomes available to anyone. Some other registrars, like GoDaddy and Namecheap, are more like traditional real estate offices.
+
+
+providing straightforward domain registration services. They work directly with the registries, but here's the thing. The registries don't deal with regular people. No, they only deal with
+
+authorized registrars. It's just business, they say. We keep the records. You handle the customers. He notices the prices are different between registrars, so he starts asking himself why.
+
+Now I understand, thinks the registrant. Each registry charges registrars a different protection fee for their territory. Verisign charges more for .com because they can. Everyone wants to live
+
+in their neighborhood. The .io registry saw this and raised their prices too when they became popular with tech companies. In the domain name industry, these price differences are significant.
+
+Verisign charges registrars about $8 to $20 yearly for a .com domain, while the .io registry charges around $60. Registrars then add their markup,
+
+which is why you might pay $15 for a .com but $80 or more for a .io domain. Ready to start his journey to independence, he first tries to get bestcode.com,
+
+The registrant doesn't give up. That's it, he exclaims after some more research. All the cool tech companies are using .io these days, so he asks his registrar to check with the
+
+Internet Computer Bureau about getting bestcode.io. Good news, says the registrar. bestcode.io is available, but you better act fast. Domain names in trendy territories like .io don't stay available
+
+for long. The registrar reaches out through their special connections. Let me talk to the registry, they say. Only authorized registrars like us can communicate with them directly.
+
+The conversation with the Internet Computer Bureau's registry goes something like this. Registrar, hey, I've got a potential new registrant for your territory.
+
+Registry, ah, one of your customers wants to establish themselves in our namespace. Registrar, yes, they're interested in bestcode.io. I've already collected their information and payment. Registry, let me check our records. Yes, that name is available in our territory. You're an authorized registrar, so we can proceed. Send over the technical details.
+
+This conversation happens through the EPP protocol, where the registrar sends standardized commands like check domain, create domain, and the registry responds with specific status codes.
+
+The registry continues. Once we add this to our zone, here's how the delegation will work. We already control .io. The Root Servers have been pointing to our Nameservers for that.
+
+We'll add bestcode.io to our zone file along with its nameservers. This tells everyone that these specific nameservers are authoritative for bestcode.io.
+
+The delegation hierarchy is already established. Root servers have NS records pointing to the .io registry's nameservers. When registering a new domain, we're just adding a new entry to the .io zone,
+
+not changing anything at the root level. The registry adds NS records for bestcode.io, and those specific nameservers will need matching records to complete the delegation chain.
+
+Your customer will need to set up their name servers, the registry adds, and make sure they have matching NS records on their side. That's how the internet will know where to find these
+
+domain services. Understood, says the registrar. We'll handle the payment and make sure the registrant understands their responsibilities. The registry updates their master database,
+
+the ultimate source of truth for who owns what in their territory. With this update, the delegation chain is clear. The root servers already trust the registry's name servers for all
+
+.io domains, and now the registry zone will show that bestcode.io belongs to our registrant. Next, the registrant will need to make sure their nameservers have matching records to
+
+complete the chain. But the story doesn't end here. The registrar asks, now, what nameservers do you want to use? The registrant looks confused. What do you mean?
+
+Well, explains the registrar, owning a domain is like owning land, but to actually use it, you need to build something on it. The nameservers are like the building permits, they tell the internet what you're going to do with your domain. You see, continues the registrar, you can either use our nameservers, or if you're hosting your website somewhere else,
+
+you can use theirs. Most people starting out just use whatever their web hosting company gives them. The registrant thinks about it. So even though I own the domain through you,
+
+I can use it with any hosting company I want? Exactly, says the registrar. That's the beauty of how domains work. We're just the ones who handle the paperwork with the registry.
+
+What you build on your domain, and where you build it, that's entirely up to you. This separation between domain registration and hosting is a fundamental principle of the
+
+internet. It's why you can register a domain with GoDaddy, but host your website on AWS, or use Cloudflare for DNS while keeping your domain registered somewhere else.
+
+The registrant decides to use a popular hosting company's nameservers. The registrar types them in, ns1.hostcompany.com, ns2.hostcompany.com. Now watch what happens, says the registrar. I'm telling the registry, the Internet Corporation for Assigned Names and Numbers, that these are the name servers responsible for your domain. From now on, when anyone anywhere in the world types bestcode.io into their browser,
+
+the Internet will know to check these nameservers to find your website. This process updates what’s called the zone file at the registry level.
+
+Every TLD registry maintains a zone file, essentially a massive directory telling the Internet which nameservers are authoritative for each domain in their territory.
+
+The registrant beams with pride. Finally, after all this research into registrars and registries, after learning about domain hijacking and redemption periods,
+
+after understanding why different territories cost different amounts, he finally has his own piece of the Internet. No more living at WordPress.com or Medium.com, he thinks.
+
+Bestcode.io is all mine. Time to build something great on it.
+
+## Negative Caching
