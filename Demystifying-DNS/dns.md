@@ -1561,3 +1561,205 @@ after understanding why different territories cost different amounts, he finally
 Bestcode.io is all mine. Time to build something great on it.
 
 ## Negative Caching
+In the domain registration story, we had our friend the registrant, who was tired of living at WordPress.com and Medium.com, wanting to register his own domain. Let’s use this same scenario to understand how negative caching works. When someone tries to access a domain that hasn’t been registered yet, in other words, when the registrant was checking if bestcode.io was available, the DNS resolver needs to figure out if this domain exists.
+
+Now, keep in mind that the code samples I'm going to show are for illustration purposes only, with the purpose of enhancing the explanation.
+
+Using the following commands most likely result in different outputs. With that in mind, let’s talk about how using a dig command against a domain that hasn’t been registered yet returns an NXDOMAIN response. In this output, the Negative Caching field corresponds to the 3600 number as highlighted on screen.
+
+Let's understand what’s happening here with negative caching. When a resolver gets an NXDomain response like this one, it also receives the SOA record of the parent zone, in the case, io.
+
+Looking at this SOA record, the last number, 3600, is actually a suggestion from the zone operator about how long resolvers should remember this domain doesn't exist response.
+
+But here's the interesting part. Resolvers aren't actually required to follow this suggestion. Some might cache for the full suggested time,
+
+others might use shorter periods, and some might even ignore it completely and use their own rules. This is entirely up to each resolver's configuration and policies.
+
+This becomes really important when our registrant finally registers their domain. Even though the top-level domain operator now knows about it,
+
+some resolvers might still have that old this-domain-doesn't-exist information cached. That's why, when you register a new domain, you might find that some people can access it right away,
+
+while others get errors saying the domain doesn't exist. These differences happen because different resolvers around the world have different cached information and different caching mechanisms.
+The same thing happens in reverse when a domain expires. Remember how in our story we talked about domain snatchers waiting to grab expired domains?
+
+When a domain enters that redemption period, resolvers start getting NXDOMAIN responses again, like in the output displayed on screen.
+
+Notice how VeriSign suggests a negative caching time of 900 seconds, or 15 minutes, for expired .com domains. This shorter time makes sense because
+
+so resolvers shouldn't cache the non-existent response for too long. This caching system exists because having every resolver check with each registry
+
+every single time someone tries to access a non-existent domain would overwhelm their systems. It's also helpful against attacks, where someone might try to overload the DNS system
+
+by repeatedly querying for domains that don't exist.
+
+## Domain Transfer != Zone Transfer
+In a previous lecture, we explained that zone transfer is the process where nameservers sync data between each other. The DNS follows a leader-follower architecture, where the primary nameserver receives the
+
+updated records in a hosted zone file, and the other ones get the data replicated through various mechanisms. In this lecture, we're talking about domain transfer.
+
+A domain transfer can mean either changing the registrar that manages your domain, or changing who owns the domain. In other words, the registrant, or both at the same time.
+
+Let's use KodeKloud.com as an example, which, as we've seen before, uses Cloudflare nameservers. If Mumshad Mannambeth wanted to keep ownership but move KodeKloud.com from Cloudflare to
+
+AWS Route 53, that would be a registrar transfer. If he wanted to give ownership to someone else, that would be a registrant transfer.
+
+And he could do both simultaneously, transferring ownership to someone else who uses a different registrar. However, domain transfers can also happen through attacks. 
+
+Domain hijacking is a form of DNS attack, where someone will attempt to take control of your domain by trying to impersonate you, for example by sending an email on your behalf.
+
+This is particularly dangerous because ICANN considers email as an acceptable method for assessing validity. To defend against domain hijacking, there are several important measures you can take.
+
+First, always keep your domain locked. Domain locking is a feature offered by domain registrars that prevents unauthorized transfers of your domain name without your explicit permission.
+
+Most registrars have this option set by default. This is called the domain transfer lock or registrar lock, and it prevents unauthorized transfers. Second, keep your SOA records updated. Third, enable auto-renewal on your domain to prevent expiration. And finally, use strong authentication methods whenever possible.
+
+To conclude this lecture, remember that while domain transfers are a legitimate process, they can be exploited through domain hijacking attacks.
+
+Now, for example, if you were subject to a domain hijacking without your authorization, you can file a dispute with ICANN to investigate and potentially reverse the transfer.
+
+## $WHOIS
+In our previous lectures, we covered how DNS helps us locate services on the internet by translating domain names into IP addresses,
+
+and how nameservers act as authoritative sources for this information. While DNS SOA records provide some administrative information like the primary nameserver and zone administrator's email,
+
+they don't give us the complete picture of domain ownership and registration details. WHOIS is a protocol standardized to give information related to domains being registered,
+
+providing information about domains such as registrar information, registration dates, expiration dates, and various contact details, while DNS focuses on service location and basic administrative details.
+
+Though still in use today, WHOIS is gradually being replaced by RDAP, which is the newer Registration Data Access Protocol offering more structured data responses.
+
+Let’s look at how WHOIS works in practice. On screen, we have a basic WHOIS query. Similar to how DNS uses a hierarchy of servers, WHOIS queries follow a path through different servers to get informations.
+
+On screen, we can see this process. One important aspect of WHOIS is privacy. Many registrars now offer WHOIS privacy services that replace personal contact information with proxy details.
+
+On screen, we can see a privacy-protected record. Today, most domain management happens through modern cloud providers and their APIs.
+
+These providers still maintain WHOIS records as required, but they're moving toward RDAP. On screen, we have a snippet of how an RDAP query looks like.
+
+RDAP solves several WHOIS limitations, for example WHOIS returns text-based responses, which resulted in responses being structured differently. RDAP provides structured JSON responses instead of free text, supports internationalized domain names better,
+
+and includes standardized status codes. Most importantly, it’s built on HTTP, making it easier to integrate with modern web services and APIs.
+
+When working with domains today, you'll encounter both systems. WHOIS remains widely used for basic domain lookups and verification, while RDAP is becoming the standard for automated domain management and integration with modern cloud services.
+
+Both serve the same basic purpose, providing information about domain registration and ownership that complements the technical data available through DNS.
+
+Using both may come in handy when debugging or troubleshooting the DNS or simply for understanding more about a domain name.
+
+# Miscellaneous
+## Setting up DNS Monitoring Tool
+Monitoring DNS is an exciting, vast topic, but I want to quickly go over some of the techniques that I use to encourage you to start digging more into this. First, because I’m on macOS, I’ll show you this Docker image called netshoot that comes with a bunch of networking tools, which I commonly use for troubleshooting network issues inside Kubernetes and other containerized workspaces. Using this will allow me to run strace commands to trace Linux system calls. I want to show you a few interesting techniques to learn how to read network system calls related to DNS. Here, I'm running an strace command to monitor the network-related system calls during a DNS lookup. The "-f" flag tells strace to follow any child processes that might be created during execution, so I don't miss any activity, even if the process spawns others. Meanwhile, the "-e trace=network" option restricts the output to only those system calls related to networking, such as when it opens a socket or makes a connection.
+
+
+On the other side, the dig command is performing a DNS query with several options. For example, the plus trace makes dig follow the DNS delegation chain from the root servers down to the authoritative nameservers until we get the final answer. If I control F and search for the connect word, you'll see that it's often followed back-to-back by send message and receive message functions. This often indicates which server is giving the answer.
+
+So if I go to the very top, and then we find who gave the answer for their root name servers, you can see that the answer was given by this IP address. I believe this belongs to the resolver configured in this Docker environment. Every recursive resolver comes pre-configured with a list of IP addresses for all their root name servers called root hints, which helps us reach root name servers to start walking the DNS tree. Following down the path, we can see that the second answer was given by this IP.
+
+If we do our reverse DNS lookup, we can see that this belongs to this nameserver, and so we can continue following their resolution chain. This gives information not provided by simply doing dig +trace. For example, right here, we can see that to resolve the AWS nameservers' IP addresses, instead of resolving this by following conventional DNS processes, the recursive resolver had the records in cache, so it returned the answer, as indicated by this line.
+
+Another great tool to use is Wireshark. I have Wireshark installed on my macOS, and I'm going to show you a basic configuration that I use to monitor DNS traffic. So if you open Wireshark, the first thing you may be asked is which network interface you want to monitor. I'm selecting EN0, as that's the one my computer used to connect to my internet router. So I double-click on it, and now I see a lot of traffic showing on the dashboard.
+
+To shortlist the data to only DNS, you can use a filter such as this one, where you indicate that you want UDP and TCP traffic comming from port 53.
+If you have a browser open or any internet application running, you'll be surprised at how many DNS requests happen, even on standby.
+
+Here I'm using the command against gocloud.com really quickly so we can inspect the traffic. You can see that there's a query and a response message here.
+
+If we click on the response, we can analyze it, remembering all we've learned in the DNS as a protocol section, and even how many bytes each part of the response is taking. Another tool I use is tcpdump. You can see that by running this command on my terminal, because we are monitoring port 53, which is the default one that DNS uses, I start to get on standard output some of the activity by my ISP's DNS resolver.
+
+For understanding very large outputs for these types of logs and system traces, a great learning resource may be to use an AI chatbot to get help interpreting the information. This can help you get used to navigating through these verbose logs. Just be careful of not sharing any sensitive data.
+
+## Troubleshooting DNS
+Troubleshooting DNS is difficult, as it involves a wide number of systems interacting with each other, starting from your machine, all the way to the authoritative nameserver, then again, on the trip of the response coming back to the initiator. Additionally, we've learned that different applications or platforms have different caching life cycles.
+
+For example, if you've encountered an issue where a DNS command successfully resolves a domain name, but the browser doesn't, it's probably because the operating system caches records for a certain period, while the browser caches them for a different duration. Let's quickly go over some of the basic categories of DNS issues, along with an initial guideline, and how to start troubleshooting. First, we have that the different systems may be unable to communicate due to network.
+
+Another issue could be that maybe they can communicate, but one of the resolvers or nameservers is overloaded, resulting in slow DNS.
+
+Another issue could be that we get the wrong DNS responses by the nameserver, for some reason. Let's break down each category and explore basic troubleshooting approaches for each.
+
+For the networking aspects, we have that, when dealing with networking-related DNS issues, we have to start with basic connectivity checks. We may try pinging the resolvers first. We may also check if the network interface is properly configured, and if this is an issue with DNS or with connectivity to the internet in general. We may want to check if there are some firewalls blocking port 53 for UDP or TCP. This can be checked by using Telnet, for example.
+
+Often, VPN configurations may be the cause of DNS issues, so disconnecting from a VPN can also help. For slow DNS, it's usually because one of the servers in the chain is slow to respond. You may notice this when new websites take ages to start loading, but they work fine once they do load. The best way to find a slow link is using the dig and trace option. This walks through the entire DNS resolution chain.
+
+Watch the timing on each step. If one nameserver takes several seconds while others respond quickly, you've found your bottleneck.
+
+There are some ways to test the speed of a DNS resolution by using the time command and the dig command, like the example shown on screen, where you may direct your query directly to your resolver by using the @ symbol, and then the IP address of the resolver. There are some online tools that benchmark resolvers' performance. Another type of DNS issue is having the wrong DNS response.
+
+Wrong DNS responses usually mean either caching issues or that the authoritative nameservers are not properly synced. I'd say this is one of the most common types of DNS issues, and one of the most difficult to debug.
+
+I learned from **Ruijan Paul**, an engineer that creates a bunch of DNS learning resources, that when working with caching issues, it's better to start with the outside components and work inwards.
+
+
+As he explains, that clearing the cache, for example, in your operating system first, if the DNS issue happens to be with stale cache in one of the external resources, your operating system will just repopulate the same faulty records from an external resource, whereas if you start on the outside and work inwards, you make sure that you'll be following a path that ensures better results. So we'll generally start with the public resources until we end up clearing the cache in our local machines.
+
+Some public resolvers have a web tool that you can use to clear the DNS cache, like the links displayed on screen. Some companies that provide content delivery network resources, like Akamai, may provide tools to either invalidate or delete the cache. This is an interesting reading, and I'm providing a link resource so you can learn more about this concept. Remember that the resolver that you communicate with depends on the configuration on your machine.
+
+Some devices are configured to talk to a resolver from your internet service provider first, so deleting the cache on public resolvers like Cloudflare or Google will do nothing if you're communicating to a resolver from your internet service provider. However, if this is the case, some of the cached records may be cleared when you reset your router.
+
+Moving into the operating system, we have that, if we're on Windows, we can use these commands to clear the DNS cache in the operating system.
+
+For Linux, we generally use systemd-resolved, which is the default in most modern Linux distributions. If you're running your own DNS server like BIND9, you'll be working with two important components.
+
+The name server, this is your actual DNS server, so you can do systemctl start, stop, or restart named, depending on the operation you want to perform.
+
+For BIND9, we also have the rndc tool, which is a tool that lets you manage your records in your DNS server without restarting the entire service.
+
+The commands for macOS will be different depending on the operating system version. For example, for Ventura and higher, we have the dns-cache-util.
+
+For older versions, there is a discovery-util tool that you can use to flush the cache. So now that we are getting into the operating system, we'll get to the application level.
+
+Specifically about browsers, most modern browsers will have a URL that you can type in the browser where you can select clear host cache or clear DNS cache.
+
+The URLs are displayed on screen and will be different depending on the browser that you're using. Now, keep in mind that if the DNS issue you're encountering is specific to an application, for example, a desktop application or a web application that you're running locally, so restarting the application will probably clear them as well.
+
+Wrong DNS responses, however, may also be caused by synchronization issues, not only by cache. Remember that the DNS uses a leader-follower architecture.
+
+and if the records are not synchronized between the leader and follower authoritative nameservers, they’ll be responding with different DNS records.
+
+I would recommend you to check this by doing DNS lookups against the different nameservers directly. You can use the dig command or nslookup to query specific nameservers, like in the sample shown on screen. If you get different answers from different nameservers, you likely have a zone transfer or synchronization issue.
+
+This is particularly common after DNS changes, when the TTL hasn’t expired or not all nameservers have updated their records yet.
+
+You can also check the SOA serial numbers to see if all of the authoritative nameservers for a zone display the same serial number ID.
+
+If the serial numbers don’t match, that’s a clear indicator of a synchronization issue between your nameservers.
+
+
+# Final Project
+## Setting Up DNS Server 
+
+In this demo, we are going to demonstrate a multi-node DNS setup. We are going to have two nameservers. The primary nameserver will be node-01, and the secondary nameserver will be node-02.
+
+We will have a webserver with an application running on node-03, which we are going to use as a client as well.
+
+So first, let's install BIND9 on node-01, which is going to be our primary nameserver. Ok, so let's start BIND9, and then we are going to declare where our zone file is going to be by modifying the name.com.local file. Our zone will be multinode.kodecloud.lab. So we add the type here to indicate that this will be our primary nameserver.
+
+And we are declaring that our zone file will be in the etc bind directory. If this was created on the public internet, this zone file would represent that we are intending to make the multinode.kodecloud.lab as a domain apex for a zone called multinode.kodecloud.lab. Let's save and exit. Now, to create the zone file, I want to find our node-01 and node-02 IP addresses first.
+
+
+because we are going to need them for the zone file. Ok, so I'm going to copy the IP addresses.
+
+Now let's create the zone file. The zone file by default will be on the etc bind directory, and by convention, it's going to have the db prefix followed by the domain apex, in this case multinode.kodekloud.lab. To begin with, we have to start by declaring the SOA records, the NS records, which are going to be node-01 and node-02, and then the Glue Records at the bottom. So let's save the file. And then we restart BIND9.
+
+And then we are going to try to resolve multinode.kodekloud.lab domain by querying directly our authoritative nameserver node-01 by using the at localhost notation.
+
+Seems like it's working. In the lab exercise, we may have you configure the zone file and then the named.conf.local file in a different order. The important thing is to remember what each one does. The named.conf.local file indicates the purpose of this server, stating that it is a primary nameserver, and it also indicates where our zone file is going to be located at. The zone file has records for our domain.
+
+So we are going to configure the secondary nameserver, node-02, so let's ssh into it, and then we are going to install BIND9 again using the same commands we used moments ago.
+
+Ok, so we start by 9. Now let's check node-01's IP address again, because it will be needed for this step.
+
+Ok, so I'm copying node-01's IP address, and then we are going to modify the named.conf.local file for node-02. This file will indicate that node-02 is our secondary nameserver, which means that this
+
+will be a follower of the leader, which is a primary nameserver. We are specifying that the leader is node-01, and we are giving its IP address on line 4 to point to it. So we save the file, and then reload BIND9. Now let's SSH into node-01 again. So here, we are going to modify another file called named.conf.options.
+
+This file controls configurations for how our nameservers will behave. For example, here we declare whether recursion will be allowed or not, which some nameservers don't allow to prevent being overloaded with requests. In this case, we are specifying that we want to allow zone transfer from node-02.
+
+Zone transfer means that a secondary nameserver will be able to request a copy of the DNS records, so both nameservers stay in sync, creating a more reliable DNS system.
+
+Now if we restart BIND9 again, and then we ssh into node-02, here we will try to make node-02 use itself as a nameserver to answer queries for multinode.kodekloud.lab, and it should work fine. We can also use node-02's IP address, and it should work fine as well. Ok, so although the following exercise won't come up in the upcoming lab, it's worth noting that you can request a primary nameserver to sync records using the AXFR to transfer the entire zone, or IXFR to transfer only incremental values.
+However, as we learned in the zone transfer lecture, most modern cloud DNS providers won't use these replication mechanisms, since they would probably have their own proprietary replication mechanisms of their own. If you're a DNS administrator, and you require your nameservers to be in sync on demand, this is what you do. Anyway, let's log in to node-03 now. Here we are going to install nginx, then we are going to start nginx, and we check the installation using curl. Ok, so it's working. Now we are going to add a CNAME record pointing to this service on our primary nameserver.
+
+So let's SSH into node-01, then we are going to modify our zone file. Here we are adding the CNAME record pointing to the web service, so that whenever we do curl www.multinode.cococlub, it should respond just fine. So we restart by 9 again, and then we SSH into node-03. And here we are going to modify the etc/resolve.conf file by adding the IP address of node-01 of  the nameserver. We save the file, and now we should be able to do curl www.multinode.coconutlab, and we can see the output produced by the Hello World nginx web service running, which means that
+
+we've successfully configured a 2-node DNS nameserver setup.
