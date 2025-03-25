@@ -1014,9 +1014,15 @@ This course won't contain more details of AXFR and IXFR for now. But as a summar
 
 ## Root Servers and Anycast
 
-So far in this course, we've established that the domain resolution process starts on the root zone. Another detail we've uncovered through commands like dig +trace is that there are only 13 root name servers. I promise you that we will explore why there are 13 root name servers later in the course, but the focus of this demo is on understanding how these 13 servers manage to handle the entire Internet's DNS traffic without becoming overwhelmed. 
+So far in this course, we've established that the domain resolution process starts on the root zone. Another detail we've uncovered through commands like dig +trace is that there are only 13 root name servers.<br>
+![Network Image](image/root-server-anycast/1.png) <br>
+ I promise you that we will explore why there are 13 root name servers later in the course, <br>
+ ![Network Image](image/root-server-anycast/2.png) <br>
+ but the focus of this demo is on understanding how these 13 servers manage to handle the entire Internet's DNS traffic without becoming overwhelmed. 
 
-Think about this, 13 servers handling DNS queries from every single device connected to the Internet worldwide. The numbers are massive when you think about all the queries happening every second. So how is it possible that only 13 root name servers are capable of handling so much load? The answer is that this is possible thanks to a network design called Anycast. What Anycast does is it allows multiple physical servers to share the same IP address. To show you exactly what I mean, I am going to open rootservers.org website
+Think about this, 13 servers handling DNS queries from every single device connected to the Internet worldwide.<br>
+![Network Image](image/root-server-anycast/3.png) <br>
+ The numbers are massive when you think about all the queries happening every second. So how is it possible that only 13 root name servers are capable of handling so much load? The answer is that this is possible thanks to a network design called **Anycast**. What Anycast does is it allows multiple physical servers to share the same IP address. To show you exactly what I mean, I am going to open `rootservers.org` website
 
 
 and then I'm going to zoom into a random location in the map. Probably Mexico because I'm from Mexico. And so in the central region, we have two locations with root servers, one in Mexico City and the other in Querétaro. If we click on Querétaro, we see that this geographical place hosts root name servers E, C, K, D, and F in a data center.
