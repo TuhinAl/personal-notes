@@ -56,4 +56,34 @@ Kubernetes provides you with:
     3. [DaemonSet](https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/)
 
 * **PodTemplates** are specifications for creating Pods, and are included in workload resources such as Deployments, Jobs, and DaemonSets.
+### Deployment Related notes:
 
+Rolling Update and Rollback:
+* Kubernetes supports rolling updates for Deployments, StatefulSets, and DaemonSets.
+* A rolling update gradually replaces Pods with new ones, without downtime.
+* A rollback is a way to revert to a previous version of a Deployment, StatefulSet, or DaemonSet.
+* Kubernetes automatically creates a new ReplicaSet for each new Deployment revision.
+* You can use the kubectl rollout command to manage the rollout of a Deployment, StatefulSet, or DaemonSet.
+`kubectl rollout restart deployment <deployment-name>`  
+This command restarts the specified Deployment by rolling out a new version of its Pods. Replace `<deployment-name>` with the name of your Deployment.
+* You can use the kubectl rollout status command to view the status of a Deployment, StatefulSet, or DaemonSet.
+   `kubectl rollout status deployment <deployment-name>`
+This command shows the status of the specified Deployment's rollout. Replace `<deployment-name>` with the name of your Deployment.
+* You can use the kubectl rollout undo command to revert to a previous version of a Deployment, StatefulSet, or DaemonSet.
+    `kubectl rollout undo deployment <deployment-name>`
+* You can use the kubectl rollout history command to view the history of a Deployment, StatefulSet, or DaemonSet.
+    `kubectl rollout history deployment <deployment-name>` 
+* You can use the kubectl rollout status command to view the status of a Deployment, StatefulSet, or DaemonSet.
+    `kubectl rollout status deployment <deployment-name>` 
+* You can use the kubectl rollout pause command to pause a Deployment, StatefulSet, or DaemonSet.
+    `kubectl rollout pause deployment <deployment-name>`
+* You can use the kubectl rollout resume command to resume a paused Deployment, StatefulSet, or DaemonSet.
+    `kubectl rollout resume deployment <deployment-name>`
+* You can use the kubectl rollout restart command to restart a Deployment, StatefulSet, or DaemonSet.
+    `kubectl rollout restart deployment <deployment-name>`
+* You can use the kubectl rollout scale command to scale a Deployment, StatefulSet, or DaemonSet.
+    `kubectl rollout scale deployment <deployment-name> --replicas=<number-of-replicas>`
+* You can use the kubectl rollout history command to view the history of a Deployment, StatefulSet, or DaemonSet.
+    `kubectl rollout history deployment <deployment-name>`
+* You can use the kubectl rollout undo command to revert to a previous version of a Deployment, StatefulSet, or DaemonSet.
+    `kubectl rollout undo deployment <deployment-name>` 
